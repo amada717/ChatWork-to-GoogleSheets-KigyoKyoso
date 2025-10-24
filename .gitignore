@@ -1,0 +1,24 @@
+# clasp によるメタファイル
+.clasp.json
+.clasp.prod.json
+
+# clasp push/pull による一時ファイル
+# （ディレクトリ構造が src/ にある場合は必要に応じて調整）
+appsscript.json
+
+# Node.js 関連（プロジェクトで使う場合）
+node_modules/
+package-lock.json
+npm-debug.log
+
+# OS や IDE 特有の不要ファイル
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+
+
+# 個人のメモなど
+notes/
+docs/
