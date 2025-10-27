@@ -1,0 +1,3 @@
+# ローカル作業用だけ除外
+local-html/
+test.html
