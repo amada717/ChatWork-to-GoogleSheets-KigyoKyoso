@@ -341,6 +341,108 @@
     });
     </script>
 
+    <script>
+    // フォーム送信時の処理
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.querySelector('.box_message');
+      if (!form) return;
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const outputObj = {};
+        const elements = form.querySelectorAll('input, textarea, select');
+        elements.forEach(el => {
+          let value = el.value;
+
+          // console.log(el.type, el.name, el.id, value);
+
+          // チェックボックスは選択されたもののみ（複数対応）
+          if (el.type === 'checkbox') {
+            if (!el.name) return; // name属性がない場合はスキップ
+            if (!outputObj[el.name]) outputObj[el.name] = [];
+            if (el.checked) outputObj[el.name].push(value);
+          }
+          // ラジオボタンは選択されたもののみ
+          else if (el.type === 'radio') {
+            if (el.checked) outputObj[el.name] = value;
+          }
+          // その他のinput, textarea, select
+          else if (el.type !== 'button' && el.type !== 'submit') {
+            outputObj[el.name || el.id] = value;
+          }
+        });
+
+        // 出力オブジェクトをコンソールに表示
+        console.log(outputObj);
+        // JSON形式で表示
+        console.log(JSON.stringify(outputObj, null, 2));
+
+        // outputObjが完成した後にテンプレート文字列を作成
+        const messageType = outputObj.IRE || '依頼'; // メッセージ種別（IRE inputの値）
+        const templateText = getTemplateText(messageType, outputObj);
+
+
+        // 1行ごとに先頭の空白を削除
+        const cleanedText = templateText
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+
+
+        // プレーンテキストとしてプレビュー表示
+        document.getElementById('clipboard').textContent = cleanedText;
+        
+        // クリップボードにコピー
+        navigator.clipboard.writeText(cleanedText)
+          .then(() => {
+            // コピー成功時の通知（任意）
+            // alert('クリップボードにコピーしました');
+          })
+          .catch(err => {
+            // コピー失敗時の通知（任意）
+            // alert('コピーに失敗しました');
+          });
+      });
+    });
+
+    // メッセージ種別ごとのテンプレート関数
+    function getTemplateText(type, outputObj) {
+      switch (type) {
+        case '依頼':
+          return `=== ${outputObj.IRE} ====
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  TO:（チャットワーク仕様を利用）
+                  期限: ${outputObj.deadline.replace('T', '_')}
+                  [hr]
+                  件名: ${outputObj.subject}
+                  重要度: ${outputObj.importance}
+                  目的: ${outputObj.purpose}
+                  [hr]
+                  【期待する返答】：${outputObj.expected_response}
+                  【背景/前提】：${outputObj.background}
+                  【制約事項/補足】：${outputObj.constraints}
+                  [hr]
+                  ${outputObj.body}
+                  [hr]
+                  ${outputObj.tags}
+                  `;
+        case '報告':
+          return `=== 報告 ====
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  件名: ${outputObj.subject}
+                  報告内容: ${outputObj.body}
+                  [hr]
+                  ${outputObj.tags}
+                  `;
+        // 他の種別も同様に追加
+        default:
+          return 'テンプレート種別が未対応です。';
+      }
+    }
+
+    </script>
+
 
 
 
