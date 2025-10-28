@@ -38,172 +38,243 @@
     <div class="container-xxl p-4">
       <h1 class="mb-5">メッセージテンプレート メーカー</h1>
 
-      <!-- <div class="nav_message_type mb-5">
-        <h2>種別選択</h2>
-        <select class="form-select" name="messageType" id="messageType">
-          <option value="依頼">依頼</option>
-          <option value="報告">報告</option>
-          <option value="相談">相談</option>
-          <option value="連絡">連絡</option>
-          <option value="確認">確認</option>
-          <option value="承認">承認</option>
-          <option value="質問">質問</option>
-          <option value="案内">案内</option>
-          <option value="注意">注意</option>
-        </select>
-      </div> -->
 
-      <!-- テンプレート；依頼 -->
-      <form class="box_message box_common_header p-4 mb-2">
+      <!-- tab navigation -->
+      <ul class="nav nav-tabs mb-4" id="messageTypeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-IRE" data-bs-toggle="tab" data-bs-target="#pane-IRE" type="button" role="tab" aria-controls="pane-IRE" aria-selected="true">依頼</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-REP" data-bs-toggle="tab" data-bs-target="#pane-REP" type="button" role="tab" aria-controls="pane-REP" aria-selected="false">報告</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CONSULT" data-bs-toggle="tab" data-bs-target="#pane-CONSULT" type="button" role="tab" aria-controls="pane-CONSULT" aria-selected="false">相談</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CONTACT" data-bs-toggle="tab" data-bs-target="#pane-CONTACT" type="button" role="tab" aria-controls="pane-CONTACT" aria-selected="false">連絡</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CHK" data-bs-toggle="tab" data-bs-target="#pane-CHK" type="button" role="tab" aria-controls="pane-CHK" aria-selected="false">確認</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-APP" data-bs-toggle="tab" data-bs-target="#pane-APP" type="button" role="tab" aria-controls="pane-APP" aria-selected="false">承認</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-QUESTION" data-bs-toggle="tab" data-bs-target="#pane-QUESTION" type="button" role="tab" aria-controls="pane-QUESTION" aria-selected="false">質問</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-GUIDE" data-bs-toggle="tab" data-bs-target="#pane-GUIDE" type="button" role="tab" aria-controls="pane-GUIDE" aria-selected="false">案内</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-NOTE" data-bs-toggle="tab" data-bs-target="#pane-NOTE" type="button" role="tab" aria-controls="pane-NOTE" aria-selected="false">注意</button>
+        </li>
+      </ul>
 
-        <!-- 共通ヘッダー -->
+      <!-- tab content -->
+      <div class="tab-content" id="messageTypeTabContent">
 
-        <!-- メッセージ種別 -->
-        <div class="item">
-          <label class="form-label">メッセージ種別</label>
-          <input type="text" class="form-control" id="IRE" value="依頼" disabled>
+        <!-- 依頼テンプレート -->
+        <div class="tab-pane fade show active" id="pane-IRE" role="tabpanel" aria-labelledby="tab-IRE">
+
+          <form class="box_message box_common_header p-4 mb-2">
+
+            <!-- 共通ヘッダー -->
+
+            <!-- メッセージ種別 -->
+            <div class="item">
+              <label class="form-label">メッセージ種別</label>
+              <input type="text" class="form-control" id="IRE" value="依頼" disabled>
+            </div>
+
+            <!-- 企業名 -->
+            <div class="item">
+              <label class="form-label text-nowrap">企業名 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="指定なし" id="companyNone" checked>
+                  <label class="form-check-label" for="companyNone">指定なし</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="A社" id="companyA">
+                  <label class="form-check-label" for="companyA">A社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="B社" id="companyB">
+                  <label class="form-check-label" for="companyB">B社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="C社" id="companyC">
+                  <label class="form-check-label" for="companyC">C社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="D社" id="companyD">
+                  <label class="form-check-label" for="companyD">D社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="E社" id="companyE">
+                  <label class="form-check-label" for="companyE">E社</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- TO -->
+            <div class="item">
+              <label for="deadline" class="form-label text-nowrap">TO</label>
+              <input type="text" class="form-control" id="to" name="to" placeholder="チャットワーク標準機能で指定" disabled>
+            </div>
+
+            <!-- 期限 -->
+            <div class="item">
+              <label for="deadline" class="form-label text-nowrap">期限 <span class="text-danger">*</span></label>
+              <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
+            </div>
+
+            <!-- 件名 -->
+            <div class="item">
+              <label for="subject" class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="subject" name="subject" placeholder="例：A社 新規キャンペーンページのコーディング依頼" required>
+            </div>
+
+            <!-- 重要度 -->
+            <div class="item">
+              <label class="form-label text-nowrap">重要度 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="高" id="importance_h" required checked>
+                  <label class="form-check-label" for="importance_h">高</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="中" id="importance_m">
+                  <label class="form-check-label" for="importance_m">中</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="低" id="importance_l">
+                  <label class="form-check-label" for="importance_l">低</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="緊急" id="importance_e">
+                  <label class="form-check-label" for="importance_e">緊急</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 目的 -->
+            <div class="item align-items-start">
+              <label for="purpose" class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
+              <div class="w-100">       
+                <textarea class="form-control" id="purpose" name="purpose" rows="2" placeholder="例：新規キャンペーンページの公開に間に合わせるため、デザインファイルの最終確認とHTMLへの落とし込みを完了させる。" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
+              </div>
+            </div>        
+            
+            <hr>
+            <!-- 詳細 -->
+
+            <!-- 【期待する返答】 -->
+            <div class="item align-items-start">
+              <label for="expected_response" class="form-label text-nowrap mt-2">
+                【期待する返答】 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="expected_response" name="expected_response" placeholder="例：添付のデザインファイルに基づいたレスポンシブなHTML/CSS一式" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 依頼者が具体的に何を成果物として求めているかを明確にする。</div>
+              </div>
+            </div>
+
+            <!-- 【背景/前提】 -->
+            <div class="item align-items-start">
+              <label for="background" class="form-label text-nowrap mt-2">【背景/前提】 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="background" name="background" placeholder="例：競合他社がリリースした新サービス対抗の緊急施策のため、最優先で対応が必要" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ なぜこの依頼が必要なのか、背景や前提条件を具体的に記入する。</div>
+              </div>
+            </div>
+
+            <!-- 【制約事項/補足】 -->
+            <div class="item align-items-start">
+              <label for="constraints" class="form-label text-nowrap mt-2">【制約事項/補足】</label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="constraints" name="constraints" placeholder="例：予算は5万円以内。デザインはスマホ画面のみ。IEは非対応で問題なし">
+                <div class="d-block text-secondary ms-1 mt-1">※ 予算、納期、技術的制約など、タスク実行上の制限事項を明記する。</div>
+              </div>
+            </div>
+
+
+            <hr>
+            <!-- 本文 -->
+            <div class="item align-items-start">
+              <label for="body" class="form-label text-nowrap mt-2">本文</label>
+              <textarea class="form-control" id="body" name="body" rows="5" placeholder="本文を入力"></textarea>
+            </div>
+
+            <hr>
+            <!-- タグ -->
+            <div class="item">
+              <label for="tags" class="form-label text-nowrap">タグ</label>
+              <input type="text" class="form-control" id="tags" name="tags" placeholder="カンマ区切りで複数指定可能（例: #tag1, #tag2, #tag3）">
+            </div>
+
+            <hr>
+            <!-- テンプレートを作成する -->
+            <button type="submit" class="btn btn-primary">テンプレートを作成する</button>
+          
+          </form>
+
         </div>
 
-        <!-- 企業名 -->
-        <div class="item">
-          <label class="form-label text-nowrap">企業名 <span class="text-danger">*</span></label>
-          <div class="d-flex gap-4">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="指定なし" id="companyNone" checked>
-              <label class="form-check-label" for="companyNone">指定なし</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="A社" id="companyA">
-              <label class="form-check-label" for="companyA">A社</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="B社" id="companyB">
-              <label class="form-check-label" for="companyB">B社</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="C社" id="companyC">
-              <label class="form-check-label" for="companyC">C社</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="D社" id="companyD">
-              <label class="form-check-label" for="companyD">D社</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="E社" id="companyE">
-              <label class="form-check-label" for="companyE">E社</label>
-            </div>
-          </div>
+        <!-- 報告テンプレート -->
+        <div class="tab-pane fade" id="pane-REP" role="tabpanel" aria-labelledby="tab-REP">
+          <div class="p-4">報告テンプレートの内容をここに記述</div>
         </div>
-
-        <!-- TO -->
-        <div class="item">
-          <label for="deadline" class="form-label text-nowrap">TO</label>
-          <input type="text" class="form-control" id="to" name="to" placeholder="チャットワーク標準機能で指定" disabled>
-        </div>
-
-        <!-- 期限 -->
-        <div class="item">
-          <label for="deadline" class="form-label text-nowrap">期限 <span class="text-danger">*</span></label>
-          <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
-        </div>
-
-        <!-- 件名 -->
-        <div class="item">
-          <label for="subject" class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="subject" name="subject" placeholder="例：A社 新規キャンペーンページのコーディング依頼" required>
-        </div>
-
-        <!-- 重要度 -->
-        <div class="item">
-          <label class="form-label text-nowrap">重要度 <span class="text-danger">*</span></label>
-          <div class="d-flex gap-4">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="importance" value="高" id="importance_h" required checked>
-              <label class="form-check-label" for="importance_h">高</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="importance" value="中" id="importance_m">
-              <label class="form-check-label" for="importance_m">中</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="importance" value="低" id="importance_l">
-              <label class="form-check-label" for="importance_l">低</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="importance" value="緊急" id="importance_e">
-              <label class="form-check-label" for="importance_e">緊急</label>
-            </div>
-          </div>
-        </div>
-
-        <!-- 目的 -->
-        <div class="item align-items-start">
-          <label for="purpose" class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
-          <div class="w-100">       
-            <textarea class="form-control" id="purpose" name="purpose" rows="2" placeholder="例：新規キャンペーンページの公開に間に合わせるため、デザインファイルの最終確認とHTMLへの落とし込みを完了させる。" required></textarea>
-            <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
-          </div>
-        </div>        
         
-        <hr>
-        <!-- 詳細 -->
-
-        <!-- 【期待する返答】 -->
-        <div class="item align-items-start">
-          <label for="expected_response" class="form-label text-nowrap mt-2">
-            【期待する返答】 <span class="text-danger">*</span></label>
-          <div class="w-100">
-            <input type="text" class="form-control" id="expected_response" name="expected_response" placeholder="例：添付のデザインファイルに基づいたレスポンシブなHTML/CSS一式" required>
-            <div class="d-block text-secondary ms-1 mt-1">※ 依頼者が具体的に何を成果物として求めているかを明確にする。</div>
-          </div>
+        <!-- 相談テンプレート -->
+        <div class="tab-pane fade" id="pane-CONSULT" role="tabpanel" aria-labelledby="tab-CONSULT">
+          <div class="p-4">相談テンプレートの内容をここに記述</div>
         </div>
-
-        <!-- 【背景/前提】 -->
-        <div class="item align-items-start">
-          <label for="background" class="form-label text-nowrap mt-2">【背景/前提】 <span class="text-danger">*</span></label>
-          <div class="w-100">
-            <input type="text" class="form-control" id="background" name="background" placeholder="例：競合他社がリリースした新サービス対抗の緊急施策のため、最優先で対応が必要" required>
-            <div class="d-block text-secondary ms-1 mt-1">※ なぜこの依頼が必要なのか、背景や前提条件を具体的に記入する。</div>
-          </div>
+        
+        <!-- 連絡テンプレート -->
+        <div class="tab-pane fade" id="pane-CONTACT" role="tabpanel" aria-labelledby="tab-CONTACT">
+          <div class="p-4">連絡テンプレートの内容をここに記述</div>
         </div>
-
-        <!-- 【制約事項/補足】 -->
-        <div class="item align-items-start">
-          <label for="constraints" class="form-label text-nowrap mt-2">【制約事項/補足】</label>
-          <div class="w-100">
-            <input type="text" class="form-control" id="constraints" name="constraints" placeholder="例：予算は5万円以内。デザインはスマホ画面のみ。IEは非対応で問題なし">
-            <div class="d-block text-secondary ms-1 mt-1">※ 予算、納期、技術的制約など、タスク実行上の制限事項を明記する。</div>
-          </div>
+        
+        <!-- 確認テンプレート -->
+        <div class="tab-pane fade" id="pane-CHK" role="tabpanel" aria-labelledby="tab-CHK">
+          <div class="p-4">確認テンプレートの内容をここに記述</div>
         </div>
-
-
-        <hr>
-        <!-- 本文 -->
-        <div class="item align-items-start">
-          <label for="body" class="form-label text-nowrap mt-2">本文</label>
-          <textarea class="form-control" id="body" name="body" rows="5" placeholder="本文を入力"></textarea>
+        
+        <!-- 承認テンプレート -->
+        <div class="tab-pane fade" id="pane-APP" role="tabpanel" aria-labelledby="tab-APP">
+          <div class="p-4">承認テンプレートの内容をここに記述</div>
         </div>
-
-        <hr>
-        <!-- タグ -->
-        <div class="item">
-          <label for="tags" class="form-label text-nowrap">タグ</label>
-          <input type="text" class="form-control" id="tags" name="tags" placeholder="カンマ区切りで複数指定可能（例: #tag1, #tag2, #tag3）">
+        
+        <!-- 質問テンプレート -->
+        <div class="tab-pane fade" id="pane-QUESTION" role="tabpanel" aria-labelledby="tab-QUESTION">
+          <div class="p-4">質問テンプレートの内容をここに記述</div>
         </div>
+        
+        <!-- 案内テンプレート -->
+        <div class="tab-pane fade" id="pane-GUIDE" role="tabpanel" aria-labelledby="tab-GUIDE">
+          <div class="p-4">案内テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 注意テンプレート -->
+        <div class="tab-pane fade" id="pane-NOTE" role="tabpanel" aria-labelledby="tab-NOTE">
+          <div class="p-4">注意テンプレートの内容をここに記述</div>
+        </div>
+      </div>
 
-        <hr>
-        <!-- テンプレートを作成する -->
-        <button type="submit" class="btn btn-primary">テンプレートを作成する</button>
-      
-      </form>
+
+
 
       <!-- クリップボード表示エリア -->
-      <div class="box_clipboard mt-5" id="clipboard"></div>
+      <div class="mt-5 mb-1"><strong>チャットワークメッセージ プレビュー</strong></div>
+      <div class="box_clipboard" id="clipboard"></div>
+
 
     </div><!-- container end -->
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
 
   </body>
 </html>
