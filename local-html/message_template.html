@@ -4,8 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>メッセージテンプレートメーカー</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
     <style>
       /*ボックス：メッセージテンプレート*/
       .box_message {
@@ -31,6 +35,11 @@
         padding: 1rem;
         white-space: pre-wrap;
         word-break: break-all;
+      }
+
+      /* deadline幅調整 */
+      #deadline {
+        max-width: 170px;
       }
     </style>
   </head>
@@ -274,8 +283,13 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-
-
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+    
+    
+    
+    
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -302,17 +316,58 @@
       });
 
 
+      // --- デイトピッカーの設定 ---
+      // 日本の祝日データ（簡易版）
+      const holidays = [
+        '2025-01-01', // 元日
+        '2025-01-13', // 成人の日
+        '2025-02-11', // 建国記念の日
+        '2025-02-23', // 天皇誕生日
+        '2025-03-20', // 春分の日
+        '2025-04-29', // 昭和の日
+        '2025-05-03', // 憲法記念日
+        '2025-05-04', // みどりの日
+        '2025-05-05', // こどもの日
+        '2025-07-21', // 海の日
+        '2025-08-11', // 山の日
+        '2025-09-15', // 敬老の日
+        '2025-09-23', // 秋分の日
+        '2025-10-13', // スポーツの日
+        '2025-11-03', // 文化の日
+        '2025-11-23', // 勤労感謝の日
+        // 必要に応じて追加
+      ];
+
+      // Flatpickrを適用
+      flatpickr("#deadline", {
+        locale: "ja", // 日本語
+        enableTime: true, // 時間選択有効
+        dateFormat: "Y-m-d H:i", // 表示形式
+        time_24hr: true, // 24時間表示
+        minuteIncrement: 60, // 60分刻み
+        defaultDate: new Date(), // デフォルト値：現在日時
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const date = dayElem.dateObj;
+          const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD形式
+          const dayOfWeek = date.getDay(); // 0:日曜, 6:土曜
+
+          // 土曜日（青）
+          if (dayOfWeek === 6) {
+            dayElem.style.color = '#0066cc';
+          }
+          // 日曜日（赤）
+          if (dayOfWeek === 0) {
+            dayElem.style.color = '#cc0000';
+          }
+          // 祝日（赤）
+          if (holidays.includes(dateStr)) {
+            dayElem.style.color = '#cc0000';
+            dayElem.style.fontWeight = 'bold';
+          }
+        }
+      });
 
 
-
-
-
-
-
-
-
-
-      
       // ダミー値をセットする関数
       function setDummyValues(form) {
         // テキスト・テキストエリア
@@ -340,12 +395,11 @@
             case 'tags':
               el.value = '#Web制作, #新規事業, #見積もり依頼';
               break;
-            default:
-              el.value = '依頼';
+            // defaultを削除して、対象外の要素は何もしない
           }
         });
 
-        // 期限（datetime-local）
+        // 期限（datetime-local）は別途処理
         const deadline = form.querySelector('input[type="datetime-local"]');
         if (deadline) {
           const now = new Date();
@@ -360,7 +414,6 @@
 
         // チェックボックス（企業名）
         form.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
-          // el.checked = (el.value === 'A社' || el.value === '指定なし'); // A社と指定なしをチェック
           el.checked = (el.value === '指定なし'); // 指定なしをチェック
         });
 
