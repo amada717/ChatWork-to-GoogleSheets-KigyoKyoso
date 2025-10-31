@@ -277,8 +277,42 @@
 
 
     <script>
-    // ダミー値を入れるスクリプト
     document.addEventListener('DOMContentLoaded', function () {
+
+      // --- 企業名チェックボックスの排他制御 ---
+      const companyCheckboxes = document.querySelectorAll('input[name="company"]');
+      const companyNone = document.getElementById('companyNone');
+      
+      companyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          if (this === companyNone) {
+            // 「指定なし」がチェックされた場合、他のチェックボックスを全て外す
+            if (this.checked) {
+              companyCheckboxes.forEach(cb => {
+                if (cb !== companyNone) cb.checked = false;
+              });
+            }
+          } else {
+            // 他の企業がチェックされた場合、「指定なし」を外す
+            if (this.checked) {
+              companyNone.checked = false;
+            }
+          }
+        });
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+      
       // ダミー値をセットする関数
       function setDummyValues(form) {
         // テキスト・テキストエリア
@@ -326,7 +360,8 @@
 
         // チェックボックス（企業名）
         form.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
-          el.checked = (el.value === 'A社' || el.value === '指定なし'); // A社と指定なしをチェック
+          // el.checked = (el.value === 'A社' || el.value === '指定なし'); // A社と指定なしをチェック
+          el.checked = (el.value === '指定なし'); // 指定なしをチェック
         });
 
         // ラジオボタン（重要度）
@@ -340,6 +375,7 @@
       if (form) setDummyValues(form);
     });
     </script>
+    
 
     <script>
     // フォーム送信時の処理
