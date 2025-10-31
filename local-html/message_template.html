@@ -215,7 +215,7 @@
 
             <hr>
             <!-- テンプレートを作成する -->
-            <button type="submit" class="btn btn-primary">テンプレートを作成する</button>
+            <button type="submit" class="btn btn-primary">テンプレートを作成する（clipboardにコピー）</button>
           
           </form>
 
@@ -410,7 +410,8 @@
     function getTemplateText(type, outputObj) {
       switch (type) {
         case '依頼':
-          return `=== ${outputObj.IRE} ====
+          return `[info]
+                  [title]${outputObj.IRE}[/title]
                   企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
                   TO:（チャットワーク仕様を利用）
                   期限: ${outputObj.deadline.replace('T', '_')}
@@ -426,7 +427,7 @@
                   ${outputObj.body}
                   [hr]
                   ${outputObj.tags}
-                  `;
+                  [/info]`;
         case '報告':
           return `=== 報告 ====
                   企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
