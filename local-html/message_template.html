@@ -984,6 +984,46 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+// デフォルトタブを制御する関数
+document.addEventListener('DOMContentLoaded', function () {
+  
+  // デフォルトで開きたいタブを指定
+  function setDefaultTab(tabId) {
+    // 全てのタブボタンを非アクティブにする
+    const allTabButtons = document.querySelectorAll('.nav-tabs .nav-link');
+    allTabButtons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    
+    // 全てのタブペインを非アクティブにする
+    const allTabPanes = document.querySelectorAll('.tab-pane');
+    allTabPanes.forEach(pane => {
+      pane.classList.remove('show', 'active');
+    });
+    
+    // 指定されたタブボタンをアクティブにする
+    const targetTabButton = document.getElementById(`tab-${tabId}`);
+    if (targetTabButton) {
+      targetTabButton.classList.add('active');
+      targetTabButton.setAttribute('aria-selected', 'true');
+    }
+    
+    // 指定されたタブペインをアクティブにする
+    const targetTabPane = document.getElementById(`pane-${tabId}`);
+    if (targetTabPane) {
+      targetTabPane.classList.add('show', 'active');
+    }
+    
+    console.log(`Default tab set to: ${tabId}`);
+  }
+
+  // 実行 - デフォルトタブを指定（例：報告タブ）
+  setDefaultTab('REP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+});
+</script>
+
 
   </body>
 </html>
