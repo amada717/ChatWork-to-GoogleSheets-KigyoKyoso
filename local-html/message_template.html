@@ -965,6 +965,24 @@
     </script>
 
 
+<script>
+// 必須項目を無効にする関数
+document.addEventListener('DOMContentLoaded', function () {
+  
+  // 全ての必須項目（required属性）を無効化
+  function disableRequiredFields() {
+    const requiredElements = document.querySelectorAll('input[required], textarea[required], select[required]');
+    requiredElements.forEach(element => {
+      element.removeAttribute('required');
+      console.log(`Removed required from: ${element.id || element.name}`);
+    });
+    console.log(`Total required fields disabled: ${requiredElements.length}`);
+  }
+
+  // 実行
+  disableRequiredFields();
+});
+</script>
 
 
   </body>
