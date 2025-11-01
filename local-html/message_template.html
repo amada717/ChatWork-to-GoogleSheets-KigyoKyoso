@@ -42,6 +42,53 @@
         max-width: 170px;
       }
     </style>
+
+    <style>
+      /* タグ管理 */
+      .tagchecklist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .tagchecklist li {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 4px 8px;
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+      }
+
+      .ntdelbutton {
+        background: none;
+        border: none;
+        color: #dc3545;
+        margin-right: 4px;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .ntdelbutton:hover {
+        color: #a71e2a;
+      }
+
+      .remove-tag-icon::before {
+        content: "×";
+        font-weight: bold;
+      }
+      #post_tag span.screen-reader-text {
+          display: none;
+      }
+      #post_tag #new-tag {
+        width: 200px;
+      }
+      #post_tag .tagadd {
+        height: 80%;
+      }
+    </style>
   </head>
   <body>
     <div class="container-xxl p-4">
@@ -258,9 +305,22 @@
 
             <hr>
             <!-- タグ -->
-            <div class="item">
-              <label for="tags" class="form-label text-nowrap">タグ</label>
-              <input type="text" class="form-control" id="tags" name="tags" placeholder="カンマ区切りで複数指定可能（例: #tag1, #tag2, #tag3）">
+            <div class="item align-items-start">
+              <label class="form-label text-nowrap mt-2">タグ</label>
+              <div class="w-100">
+                <div class="tagsdiv" id="post_tag">
+                  <div class="jaxtag">
+                    <div class="ajaxtag d-flex align-items-center gap-3">
+                      <input type="text" id="new-tag" class="form-control" placeholder="新しいタグを入力" size="16" autocomplete="off">
+                      <button type="button" class="btn btn-sm btn-outline-secondary tagadd">追加</button>
+                    </div>
+                  </div>
+                  <!-- 非表示のinput（フォーム送信用） -->
+                  <input type="hidden" id="tags" name="tags" value="">
+                  <!-- タグ一覧表示 -->
+                  <ul class="tagchecklist list-unstyled mb-0 _mt-0" role="list"></ul>
+                </div>
+              </div>
             </div>
 
             <hr>
@@ -705,7 +765,87 @@
       if (form) setDummyValues(form);
     });
     </script>
-    
+
+
+    <script>
+    // タグ管理機能
+    document.addEventListener('DOMContentLoaded', function () {
+      const newTagInput = document.getElementById('new-tag');
+      const tagAddButton = document.querySelector('.tagadd');
+      const tagCheckList = document.querySelector('.tagchecklist');
+      const tagsHiddenInput = document.getElementById('tags');
+      
+      let tags = [];
+
+      // タグ追加機能
+      function addTag() {
+        const tagValue = newTagInput.value.trim();
+        if (tagValue && !tags.includes(tagValue)) {
+          tags.push(tagValue);
+          updateTagDisplay();
+          updateHiddenInput();
+          newTagInput.value = '';
+        }
+      }
+
+      // タグ削除機能
+      function removeTag(tagToRemove) {
+        tags = tags.filter(tag => tag !== tagToRemove);
+        updateTagDisplay();
+        updateHiddenInput();
+      }
+
+      // タグ表示更新
+      function updateTagDisplay() {
+        tagCheckList.innerHTML = '';
+        tags.forEach((tag, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <button type="button" class="ntdelbutton" data-tag="${tag}">
+              <span class="remove-tag-icon" aria-hidden="true"></span>
+              <span class="screen-reader-text">タグを削除: ${tag}</span>
+            </button>
+            &nbsp;${tag}
+          `;
+          
+          // 削除ボタンのイベント
+          li.querySelector('.ntdelbutton').addEventListener('click', function() {
+            removeTag(this.dataset.tag);
+          });
+          
+          tagCheckList.appendChild(li);
+        });
+      }
+
+      // hidden inputの値更新
+      function updateHiddenInput() {
+        tagsHiddenInput.value = tags.map(tag => tag.startsWith('#') ? tag : `#${tag}`).join(', ');
+      }
+
+      // イベントリスナー
+      tagAddButton.addEventListener('click', addTag);
+      
+      newTagInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTag();
+        }
+      });
+
+      // 初期タグ設定（ダミー値用）
+      function setInitialTags(tagString) {
+        if (tagString) {
+          tags = tagString.split(',').map(tag => tag.trim().replace('#', ''));
+          updateTagDisplay();
+          updateHiddenInput();
+        }
+      }
+
+      // ダミー値セット時にタグも設定
+      window.setInitialTags = setInitialTags;
+    });
+    </script>
+
 
     <script>
     // フォーム送信時の処理
