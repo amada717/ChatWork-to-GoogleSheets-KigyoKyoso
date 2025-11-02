@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>メッセージテンプレートメーカー</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+      .nav-tabs .nav-link {
+        cursor: pointer;
+        font-size: 1.2em;
+        font-weight: bold;
+        letter-spacing: .1em;
+      }
+      /*ボックス：メッセージテンプレート*/
+      .box_message {
+        background-color: #ddd;
+        border-radius: 8px;
+      }
+      .box_message .item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .box_message .item .form-label {
+        min-width: 160px;
+        font-weight: bold;
+        margin-bottom: 0;
+      }
+
+      /*ボックス：クリップボード */
+      .box_clipboard {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        padding: 1rem;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      /* deadline幅調整 */
+      #deadline {
+        max-width: 170px;
+      }
+    </style>
+
+    <style>
+      /* タグ管理 */
+      .tagchecklist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .tagchecklist li {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 4px 8px;
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+      }
+
+      .ntdelbutton {
+        background: none;
+        border: none;
+        color: #dc3545;
+        margin-right: 4px;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .ntdelbutton:hover {
+        color: #a71e2a;
+      }
+
+      .remove-tag-icon::before {
+        content: "×";
+        font-weight: bold;
+      }
+      #post_tag span.screen-reader-text {
+          display: none;
+      }
+      #post_tag #new-tag {
+        width: 200px;
+      }
+      #post_tag .tagadd {
+        height: 80%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-xxl p-4">
+      <h1 class="mb-4">メッセージテンプレート メーカー</h1>
+
+
+      <!-- tab navigation -->
+      <ul class="nav nav-tabs mb-4" id="messageTypeTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-IRE" data-bs-toggle="tab" data-bs-target="#pane-IRE" type="button" role="tab" aria-controls="pane-IRE" aria-selected="true">依頼</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-REP" data-bs-toggle="tab" data-bs-target="#pane-REP" type="button" role="tab" aria-controls="pane-REP" aria-selected="false">報告</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CONSULT" data-bs-toggle="tab" data-bs-target="#pane-CONSULT" type="button" role="tab" aria-controls="pane-CONSULT" aria-selected="false">相談</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CONTACT" data-bs-toggle="tab" data-bs-target="#pane-CONTACT" type="button" role="tab" aria-controls="pane-CONTACT" aria-selected="false">連絡</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-CHK" data-bs-toggle="tab" data-bs-target="#pane-CHK" type="button" role="tab" aria-controls="pane-CHK" aria-selected="false">確認</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-APP" data-bs-toggle="tab" data-bs-target="#pane-APP" type="button" role="tab" aria-controls="pane-APP" aria-selected="false">承認</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-QUESTION" data-bs-toggle="tab" data-bs-target="#pane-QUESTION" type="button" role="tab" aria-controls="pane-QUESTION" aria-selected="false">質問</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-GUIDE" data-bs-toggle="tab" data-bs-target="#pane-GUIDE" type="button" role="tab" aria-controls="pane-GUIDE" aria-selected="false">案内</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-NOTE" data-bs-toggle="tab" data-bs-target="#pane-NOTE" type="button" role="tab" aria-controls="pane-NOTE" aria-selected="false">注意</button>
+        </li>
+      </ul>
+
+      <!-- tab content -->
+      <div class="tab-content" id="messageTypeTabContent">
+
+        <!-- 依頼テンプレート -->
+        <div class="tab-pane fade show active" id="pane-IRE" role="tabpanel" aria-labelledby="tab-IRE">
+
+          <form class="box_message box_common_header p-4 mb-2">
+
+            <!-- 共通ヘッダー -->
+
+            <!-- メッセージ種別 -->
+            <div class="item">
+              <label class="form-label">メッセージ種別</label>
+              <input type="text" class="form-control" id="IRE" value="依頼" disabled>
+            </div>
+
+            <!-- 企業名 -->
+            <div class="item">
+              <label class="form-label text-nowrap">企業名 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="指定なし" id="companyNone" checked>
+                  <label class="form-check-label" for="companyNone">指定なし</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="A社" id="companyA">
+                  <label class="form-check-label" for="companyA">A社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="B社" id="companyB">
+                  <label class="form-check-label" for="companyB">B社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="C社" id="companyC">
+                  <label class="form-check-label" for="companyC">C社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="D社" id="companyD">
+                  <label class="form-check-label" for="companyD">D社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="E社" id="companyE">
+                  <label class="form-check-label" for="companyE">E社</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- TO -->
+            <div class="item">
+              <label for="deadline" class="form-label text-nowrap">TO</label>
+              <input type="text" class="form-control" id="to" name="to" placeholder="チャットワーク標準機能で指定" disabled>
+            </div>
+
+            <!-- 期限 -->
+            <div class="item align-items-start">
+              <label class="form-label text-nowrap">期限 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <!-- 期限選択オプション -->
+                <div class="d-flex gap-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="deadline_custom" checked>
+                    <label class="form-check-label" for="deadline_custom">特定日時</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="本日中" id="deadline_today">
+                    <label class="form-check-label" for="deadline_today">本日中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="明日中" id="deadline_tomorrow">
+                    <label class="form-check-label" for="deadline_tomorrow">明日中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="今週中" id="deadline_this_week">
+                    <label class="form-check-label" for="deadline_this_week">今週中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="翌営業日まで" id="deadline_next_business_day">
+                    <label class="form-check-label" for="deadline_next_business_day">翌営業日まで</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="今月中" id="deadline_this_month">
+                    <label class="form-check-label" for="deadline_this_month">今月中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="deadline_no_specified">
+                    <label class="form-check-label" for="deadline_no_specified">指定なし</label>
+                  </div>
+                </div>
+                <!-- デイトピッカー -->
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16">
+                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                    </svg>
+                  </span>
+                  <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- 件名 -->
+            <div class="item">
+              <label for="subject" class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="subject" name="subject" placeholder="例：A社 新規キャンペーンページのコーディング依頼" required>
+            </div>
+
+            <!-- 重要度 -->
+            <div class="item">
+              <label class="form-label text-nowrap">重要度 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="高" id="importance_h" required checked>
+                  <label class="form-check-label" for="importance_h">高</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="中" id="importance_m">
+                  <label class="form-check-label" for="importance_m">中</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="低" id="importance_l">
+                  <label class="form-check-label" for="importance_l">低</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="緊急" id="importance_e">
+                  <label class="form-check-label" for="importance_e">緊急</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 目的 -->
+            <div class="item align-items-start">
+              <label for="purpose" class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
+              <div class="w-100">       
+                <textarea class="form-control" id="purpose" name="purpose" rows="2" placeholder="例：新規キャンペーンページの公開に間に合わせるため、デザインファイルの最終確認とHTMLへの落とし込みを完了させる。" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
+              </div>
+            </div>        
+            
+            <hr>
+            <!-- 詳細 -->
+
+            <!-- 【期待する返答】 -->
+            <div class="item align-items-start">
+              <label for="expected_response" class="form-label text-nowrap mt-2">
+                【期待する返答】 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="expected_response" name="expected_response" placeholder="例：添付のデザインファイルに基づいたレスポンシブなHTML/CSS一式" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 依頼者が具体的に何を成果物として求めているかを明確にする。</div>
+              </div>
+            </div>
+
+            <!-- 【背景/前提】 -->
+            <div class="item align-items-start">
+              <label for="background" class="form-label text-nowrap mt-2">【背景/前提】 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="background" name="background" placeholder="例：競合他社がリリースした新サービス対抗の緊急施策のため、最優先で対応が必要" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ なぜこの依頼が必要なのか、背景や前提条件を具体的に記入する。</div>
+              </div>
+            </div>
+
+            <!-- 【制約事項/補足】 -->
+            <div class="item align-items-start">
+              <label for="constraints" class="form-label text-nowrap mt-2">【制約事項/補足】</label>
+              <div class="w-100">
+                <input type="text" class="form-control" id="constraints" name="constraints" placeholder="例：予算は5万円以内。デザインはスマホ画面のみ。IEは非対応で問題なし">
+                <div class="d-block text-secondary ms-1 mt-1">※ 予算、納期、技術的制約など、タスク実行上の制限事項を明記する。</div>
+              </div>
+            </div>
+
+
+            <hr>
+            <!-- 本文 -->
+            <div class="item align-items-start">
+              <label for="body" class="form-label text-nowrap mt-2">本文</label>
+              <textarea class="form-control" id="body" name="body" rows="5" placeholder="本文を入力"></textarea>
+            </div>
+
+            <hr>
+            <!-- タグ -->
+            <div class="item align-items-start">
+              <label class="form-label text-nowrap mt-2">タグ</label>
+              <div class="w-100">
+                <div class="tagsdiv" id="post_tag">
+                  <div class="jaxtag">
+                    <div class="ajaxtag d-flex align-items-center gap-3">
+                      <input type="text" id="new-tag" class="form-control" placeholder="新しいタグを入力" size="16" autocomplete="off">
+                      <button type="button" class="btn btn-sm btn-outline-secondary tagadd">追加</button>
+                    </div>
+                  </div>
+                  <!-- 非表示のinput（フォーム送信用） -->
+                  <input type="hidden" id="tags" name="tags" value="">
+                  <!-- タグ一覧表示 -->
+                  <ul class="tagchecklist list-unstyled mb-0 _mt-0" role="list"></ul>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+            <!-- テンプレートを作成する -->
+            <button type="submit" class="btn btn-primary">テンプレートを作成する（clipboardにコピー）</button>
+          
+          </form>
+
+        </div>
+
+        <!-- 報告テンプレート -->
+        <div class="tab-pane fade" id="pane-REP" role="tabpanel" aria-labelledby="tab-REP">
+          
+
+
+
+        </div>
+        
+        <!-- 相談テンプレート -->
+        <div class="tab-pane fade" id="pane-CONSULT" role="tabpanel" aria-labelledby="tab-CONSULT">
+          <div class="p-4">相談テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 連絡テンプレート -->
+        <div class="tab-pane fade" id="pane-CONTACT" role="tabpanel" aria-labelledby="tab-CONTACT">
+          <div class="p-4">連絡テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 確認テンプレート -->
+        <div class="tab-pane fade" id="pane-CHK" role="tabpanel" aria-labelledby="tab-CHK">
+          <div class="p-4">確認テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 承認テンプレート -->
+        <div class="tab-pane fade" id="pane-APP" role="tabpanel" aria-labelledby="tab-APP">
+          <div class="p-4">承認テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 質問テンプレート -->
+        <div class="tab-pane fade" id="pane-QUESTION" role="tabpanel" aria-labelledby="tab-QUESTION">
+          <div class="p-4">質問テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 案内テンプレート -->
+        <div class="tab-pane fade" id="pane-GUIDE" role="tabpanel" aria-labelledby="tab-GUIDE">
+          <div class="p-4">案内テンプレートの内容をここに記述</div>
+        </div>
+        
+        <!-- 注意テンプレート -->
+        <div class="tab-pane fade" id="pane-NOTE" role="tabpanel" aria-labelledby="tab-NOTE">
+          <div class="p-4">注意テンプレートの内容をここに記述</div>
+        </div>
+      </div>
+
+
+
+
+      <!-- クリップボード表示エリア -->
+      <div class="mt-5 mb-1"><strong>チャットワークメッセージ プレビュー</strong></div>
+      <div class="box_clipboard" id="clipboard"></div>
+
+
+    </div><!-- container end -->
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+    
+    
+    
+    
+    <script>
+    // 各種UI制御
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // --- 企業名チェックボックスの排他制御 ---
+      const companyCheckboxes = document.querySelectorAll('input[name="company"]');
+      const companyNone = document.getElementById('companyNone');
+      
+      companyCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          if (this === companyNone) {
+            // 「指定なし」がチェックされた場合、他のチェックボックスを全て外す
+            if (this.checked) {
+              companyCheckboxes.forEach(cb => {
+                if (cb !== companyNone) cb.checked = false;
+              });
+            }
+          } else {
+            // 他の企業がチェックされた場合、「指定なし」を外す
+            if (this.checked) {
+              companyNone.checked = false;
+            }
+          }
+        });
+      });
+
+
+
+      // --- 期限ラジオボタンとデイトピッカーの連動 ---
+      const deadlineTypeRadios = document.querySelectorAll('input[name="deadline_type"]');
+      const deadlineInput = document.getElementById('deadline');
+
+      // デフォルト値を保持する変数
+      let defaultDateTimeValue = '';
+
+      // 初期値を設定
+      const now = new Date();
+      const pad = n => n.toString().padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const mm = pad(now.getMonth() + 1);
+      const dd = pad(now.getDate());
+      const hh = pad(now.getHours());
+      const min = pad(now.getMinutes());
+      defaultDateTimeValue = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+
+      deadlineTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === '特定日時') {
+            // 特定期日が選択された場合、デイトピッカーを有効化し、デフォルト値に戻す
+            deadlineInput.disabled = false;
+            deadlineInput.value = defaultDateTimeValue;
+          } else {
+            // その他の選択肢の場合、デイトピッカーを無効化
+            deadlineInput.disabled = true;
+            // 選択された値をinputに設定
+            deadlineInput.value = this.value;
+          }
+        });
+      });
+
+      // 初期状態は「特定期日」を選択、デイトピッカー有効
+      document.getElementById('deadline_custom').checked = true;
+      deadlineInput.disabled = false;
+      deadlineInput.value = defaultDateTimeValue;
+
+
+
+      // --- デイトピッカーの設定 ---
+      // 日本の祝日データ（簡易版）
+      const holidays = [
+        '2025-01-01', // 元日
+        '2025-01-13', // 成人の日
+        '2025-02-11', // 建国記念の日
+        '2025-02-23', // 天皇誕生日
+        '2025-03-20', // 春分の日
+        '2025-04-29', // 昭和の日
+        '2025-05-03', // 憲法記念日
+        '2025-05-04', // みどりの日
+        '2025-05-05', // こどもの日
+        '2025-07-21', // 海の日
+        '2025-08-11', // 山の日
+        '2025-09-15', // 敬老の日
+        '2025-09-23', // 秋分の日
+        '2025-10-13', // スポーツの日
+        '2025-11-03', // 文化の日
+        '2025-11-23', // 勤労感謝の日
+        // 必要に応じて追加
+      ];
+
+      // Flatpickrを適用
+      flatpickr("#deadline", {
+        locale: "ja", // 日本語
+        enableTime: true, // 時間選択有効
+        dateFormat: "Y-m-d H:i", // 表示形式
+        time_24hr: true, // 24時間表示
+        minuteIncrement: 60, // 60分刻み
+        defaultDate: new Date(), // デフォルト値：現在日時
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+          const date = dayElem.dateObj;
+          const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD形式
+          const dayOfWeek = date.getDay(); // 0:日曜, 6:土曜
+
+          // 土曜日（青）
+          if (dayOfWeek === 6) {
+            dayElem.style.color = '#0066cc';
+          }
+          // 日曜日（赤）
+          if (dayOfWeek === 0) {
+            dayElem.style.color = '#cc0000';
+          }
+          // 祝日（赤）
+          if (holidays.includes(dateStr)) {
+            dayElem.style.color = '#cc0000';
+            dayElem.style.fontWeight = 'bold';
+          }
+        }
+      });
+
+
+
+      // ダミー値をセットする関数
+      function setDummyValues(form) {
+        // テキスト・テキストエリア
+        form.querySelectorAll('input[type="text"], textarea').forEach(el => {
+          if (el.id === 'to') return; // TOはdisabledなのでスキップ
+          switch (el.id || el.name) {
+            case 'subject':
+              el.value = 'A社 新規キャンペーンページのコーディング依頼';
+              break;
+            case 'purpose':
+              el.value = '新規キャンペーンページ公開のため、デザイン最終確認とHTML化を完了させる。';
+              break;
+            case 'expected_response':
+              el.value = '添付デザインファイルに基づいたHTML/CSS一式';
+              break;
+            case 'background':
+              el.value = '競合他社の新サービス対抗施策のため、最優先で対応が必要';
+              break;
+            case 'constraints':
+              el.value = '予算5万円以内、スマホ画面のみ、IE非対応';
+              break;
+            case 'body':
+              el.value = '詳細は添付資料をご確認ください。';
+              break;
+            case 'tags':
+              el.value = '#Web制作, #新規事業, #見積もり依頼';
+              break;
+            // defaultを削除して、対象外の要素は何もしない
+          }
+        });
+
+        // 期限（datetime-local）は別途処理
+        const deadline = form.querySelector('input[type="datetime-local"]');
+        if (deadline) {
+          const now = new Date();
+          const pad = n => n.toString().padStart(2, '0');
+          const yyyy = now.getFullYear();
+          const mm = pad(now.getMonth() + 1);
+          const dd = pad(now.getDate());
+          const hh = pad(now.getHours());
+          const min = pad(now.getMinutes());
+          deadline.value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+        }
+
+        // チェックボックス（企業名）
+        form.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
+          el.checked = (el.value === '指定なし'); // 指定なしをチェック
+        });
+
+        // ラジオボタン（重要度）
+        form.querySelectorAll('input[type="radio"][name="importance"]').forEach(el => {
+          el.checked = (el.value === '高');
+        });
+      }
+
+      // 実行
+      const form = document.querySelector('.box_message');
+      if (form) setDummyValues(form);
+    });
+    </script>
+
+
+    <script>
+    // タグ管理機能
+    document.addEventListener('DOMContentLoaded', function () {
+      const newTagInput = document.getElementById('new-tag');
+      const tagAddButton = document.querySelector('.tagadd');
+      const tagCheckList = document.querySelector('.tagchecklist');
+      const tagsHiddenInput = document.getElementById('tags');
+      
+      let tags = [];
+
+      // タグ追加機能
+      function addTag() {
+        const tagValue = newTagInput.value.trim();
+        if (tagValue && !tags.includes(tagValue)) {
+          tags.push(tagValue);
+          updateTagDisplay();
+          updateHiddenInput();
+          newTagInput.value = '';
+        }
+      }
+
+      // タグ削除機能
+      function removeTag(tagToRemove) {
+        tags = tags.filter(tag => tag !== tagToRemove);
+        updateTagDisplay();
+        updateHiddenInput();
+      }
+
+      // タグ表示更新
+      function updateTagDisplay() {
+        tagCheckList.innerHTML = '';
+        tags.forEach((tag, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <button type="button" class="ntdelbutton" data-tag="${tag}">
+              <span class="remove-tag-icon" aria-hidden="true"></span>
+              <span class="screen-reader-text">タグを削除: ${tag}</span>
+            </button>
+            &nbsp;${tag}
+          `;
+          
+          // 削除ボタンのイベント
+          li.querySelector('.ntdelbutton').addEventListener('click', function() {
+            removeTag(this.dataset.tag);
+          });
+          
+          tagCheckList.appendChild(li);
+        });
+      }
+
+      // hidden inputの値更新
+      function updateHiddenInput() {
+        tagsHiddenInput.value = tags.map(tag => tag.startsWith('#') ? tag : `#${tag}`).join(', ');
+      }
+
+      // イベントリスナー
+      tagAddButton.addEventListener('click', addTag);
+      
+      newTagInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTag();
+        }
+      });
+
+      // 初期タグ設定（ダミー値用）
+      function setInitialTags(tagString) {
+        if (tagString) {
+          tags = tagString.split(',').map(tag => tag.trim().replace('#', ''));
+          updateTagDisplay();
+          updateHiddenInput();
+        }
+      }
+
+      // ダミー値セット時にタグも設定
+      window.setInitialTags = setInitialTags;
+    });
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+    // フォーム送信時の処理
+    document.addEventListener('DOMContentLoaded', function () {
+      
+      // 各タブのフォームにイベントリスナーを個別に設定
+      const forms = document.querySelectorAll('.box_message');
+      
+      forms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault(); // フォーム送信を止める
+          
+          // 現在のフォームが属するタブペインを取得
+          const tabPane = form.closest('.tab-pane');
+          
+          // アクティブなタブでない場合は処理を停止
+          if (!tabPane.classList.contains('active')) {
+            return;
+          }
+
+          const outputObj = {};
+          const elements = this.querySelectorAll('input, textarea, select'); // this = 現在のフォーム
+          
+          elements.forEach(el => {
+            let value = el.value;
+
+            // チェックボックスは選択されたもののみ（複数対応）
+            if (el.type === 'checkbox') {
+              if (!el.name) return;
+              if (!outputObj[el.name]) outputObj[el.name] = [];
+              if (el.checked) outputObj[el.name].push(value);
+            }
+            // ラジオボタンは選択されたもののみ
+            else if (el.type === 'radio') {
+              if (el.checked) outputObj[el.name] = value;
+            }
+            // その他のinput, textarea, select
+            else if (el.type !== 'button' && el.type !== 'submit') {
+              outputObj[el.name || el.id] = value;
+            }
+          });
+
+          // 出力オブジェクトをコンソールに表示
+          console.log(outputObj);
+          console.log(JSON.stringify(outputObj, null, 2));
+
+          // outputObjが完成した後にテンプレート文字列を作成
+          const messageType = outputObj.IRE || '依頼';
+          const templateText = getTemplateText(messageType, outputObj);
+
+          // 1行ごとに先頭の空白を削除
+          const cleanedText = templateText
+            .split('\n')
+            .map(line => line.trimStart())
+            .join('\n');
+
+          // プレーンテキストとしてプレビュー表示
+          document.getElementById('clipboard').textContent = cleanedText;
+          
+          // クリップボードにコピー
+          navigator.clipboard.writeText(cleanedText)
+            .then(() => {
+              // コピー成功時の通知（任意）
+            })
+            .catch(err => {
+              // コピー失敗時の通知（任意）
+            });
+        });
+      });
+    });
+
+
+
+
+    // メッセージ種別ごとのテンプレート関数
+    function getTemplateText(type, outputObj) {
+      switch (type) {
+        case '依頼':
+          return `[info]
+                  [title]${outputObj.IRE}[/title]
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  TO:（チャットワーク仕様を利用）
+                  期限: ${outputObj.deadline.replace('T', '_')}
+                  [hr]
+                  件名: ${outputObj.subject}
+                  重要度: ${outputObj.importance}
+                  目的: ${outputObj.purpose}
+                  [hr]
+                  【期待する返答】：${outputObj.expected_response}
+                  【背景/前提】：${outputObj.background}
+                  【制約事項/補足】：${outputObj.constraints}
+                  [hr]
+                  ${outputObj.body}
+                  [hr]
+                  ${outputObj.tags}
+                  [/info]`;
+        case '報告':
+          return `=== 報告 ====
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  件名: ${outputObj.subject}
+                  報告内容: ${outputObj.body}
+                  [hr]
+                  ${outputObj.tags}
+                  `;
+        // 他の種別も同様に追加
+        default:
+          return 'テンプレート種別が未対応です。';
+      }
+    }
+
+    </script>
+
+
+<script>
+// 必須項目を無効にする関数
+document.addEventListener('DOMContentLoaded', function () {
+  
+  // 全ての必須項目（required属性）を無効化
+  function disableRequiredFields() {
+    const requiredElements = document.querySelectorAll('input[required], textarea[required], select[required]');
+    requiredElements.forEach(element => {
+      element.removeAttribute('required');
+      console.log(`Removed required from: ${element.id || element.name}`);
+    });
+    console.log(`Total required fields disabled: ${requiredElements.length}`);
+  }
+
+  // 実行
+  // disableRequiredFields();
+});
+</script>
+
+<script>
+// デフォルトタブを制御する関数
+document.addEventListener('DOMContentLoaded', function () {
+  
+  // デフォルトで開きたいタブを指定
+  function setDefaultTab(tabId) {
+    // 全てのタブボタンを非アクティブにする
+    const allTabButtons = document.querySelectorAll('.nav-tabs .nav-link');
+    allTabButtons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    
+    // 全てのタブペインを非アクティブにする
+    const allTabPanes = document.querySelectorAll('.tab-pane');
+    allTabPanes.forEach(pane => {
+      pane.classList.remove('show', 'active');
+    });
+    
+    // 指定されたタブボタンをアクティブにする
+    const targetTabButton = document.getElementById(`tab-${tabId}`);
+    if (targetTabButton) {
+      targetTabButton.classList.add('active');
+      targetTabButton.setAttribute('aria-selected', 'true');
+    }
+    
+    // 指定されたタブペインをアクティブにする
+    const targetTabPane = document.getElementById(`pane-${tabId}`);
+    if (targetTabPane) {
+      targetTabPane.classList.add('show', 'active');
+    }
+    
+    console.log(`Default tab set to: ${tabId}`);
+  }
+
+  // 実行 - デフォルトタブを指定（例：報告タブ）
+  // setDefaultTab('REP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+});
+</script>
+
+
+  </body>
+</html>
