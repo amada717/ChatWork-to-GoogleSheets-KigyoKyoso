@@ -579,17 +579,17 @@
       }
 
 
-      // 全てのフォームに制御を適用
+      // --- 全てのフォームに制御を適用 ---
       const forms = document.querySelectorAll('.box_message');
       forms.forEach(form => {
         setupCompanyExclusiveControl(form);
         setupDeadlineControl(form);
         setupFlatpickr(form);
-        setupTagManagement(form); // 追加
+        setupTagManagement(form);
       });
 
 
-      // ダミー値をセットする関数
+      // --- ダミー値をセットする関数 ---
       function setDummyValues(form) {
         // テキスト・テキストエリア
         form.querySelectorAll('input[type="text"], textarea').forEach(el => {
@@ -654,7 +654,7 @@
 
 
     <script>
-    // フォーム送信時の処理
+    // --- フォーム送信時の処理 ---
     document.addEventListener('DOMContentLoaded', function () {
       
       // 各タブのフォームにイベントリスナーを個別に設定
@@ -726,7 +726,7 @@
 
 
 
-    // メッセージ種別ごとのテンプレート関数
+    // --- メッセージ種別ごとのテンプレート関数 --- 
     function getTemplateText(type, outputObj) {
       switch (type) {
         case '依頼':
@@ -767,7 +767,7 @@
 
 
 <script>
-// 必須項目を無効にする関数
+// === 必須項目を無効にする関数（削除・無効化予定） === 
 document.addEventListener('DOMContentLoaded', function () {
   
   // 全ての必須項目（required属性）を無効化
@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script>
-// デフォルトタブを制御する関数
+// === デフォルトタブを制御する関数（削除・無効化予定） ===
 document.addEventListener('DOMContentLoaded', function () {
   
   // デフォルトで開きたいタブを指定
