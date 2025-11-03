@@ -836,7 +836,7 @@
                 <!-- 期限選択オプション -->
                 <div class="d-flex gap-4 mb-2">
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="CONTACT_deadline_custom" checked>
+                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="CONTACT_deadline_custom">
                     <label class="form-check-label" for="CONTACT_deadline_custom">特定日時</label>
                   </div>
                   <div class="form-check">
@@ -856,11 +856,11 @@
                     <label class="form-check-label" for="CONTACT_deadline_next_business_day">翌営業日まで</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="deadline_type" value="今月中" id="CONTACT_deadline_this_month">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="今月中" id="CONTACT_deadline_this_month" checked>
                     <label class="form-check-label" for="CONTACT_deadline_this_month">今月中</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="CONTACT_deadline_no_specified">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="CONTACT_deadline_no_specified" >
                     <label class="form-check-label" for="CONTACT_deadline_no_specified">指定なし</label>
                   </div>
                 </div>
@@ -2114,7 +2114,10 @@
             deadlineInput.value = defaultDateTimeValue;
           } else {
             deadlineInput.disabled = true;
-            deadlineInput.value = checkedRadio.value;
+            // 遅延実行で値を設定
+            setTimeout(() => {
+              deadlineInput.value = checkedRadio.value;
+            }, 200); // 200ms遅延（初期化時はFlatpickr読み込みを考慮してやや長めに）
           }
         }
       }
@@ -2569,7 +2572,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const requiredElements = document.querySelectorAll('input[required], textarea[required], select[required]');
     requiredElements.forEach(element => {
       element.removeAttribute('required');
-      console.log(`Removed required from: ${element.id || element.name}`);
+      // console.log(`Removed required from: ${element.id || element.name}`);
     });
     console.log(`Total required fields disabled: ${requiredElements.length}`);
   }
@@ -2615,7 +2618,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('CONSULT'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('CONTACT'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
