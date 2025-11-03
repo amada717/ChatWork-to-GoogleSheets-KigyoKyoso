@@ -1540,7 +1540,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：Salesforce『最終更新日』フィールドの更新方式について" required>
             </div>
 
             <!-- 重要度 -->
@@ -1570,7 +1570,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：顧客データベースの正確な運用とデータ整合性を確保するため、システム仕様を明確化し、適切な更新手順を確立する。" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。</div>
               </div>
             </div>        
@@ -1583,8 +1583,8 @@
               <label class="form-label text-nowrap mt-2">
                 【質問対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_question_target"  placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_question_target"  placeholder="例：顧客データベース（Salesforce）の『最終更新日』フィールドの定義" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 質問の対象となる資料、機能、コード、用語などを特定する。</div>
               </div>
             </div>
 
@@ -1593,8 +1593,8 @@
               <label class="form-label text-nowrap mt-2">
                 【試したこと/<br>確認箇所】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_pre_check" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_pre_check" rows="2" placeholder="例：マニュアルのP.15とP.30を確認したが、リアルタイム更新なのか手動更新なのか判別できなかった" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 質問者が既に調査・検討した情報を記録し、回答者の負担を軽減する。</div>
               </div>
             </div>
 
@@ -1603,8 +1603,8 @@
               <label class="form-label text-nowrap mt-2">
                 【期待する回答】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_expected_answer" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_expected_answer" rows="2" placeholder="例：リアルタイム更新か否か、およびマニュアルの該当ページを教えてほしい" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 回答者に具体的に何を求めているか（答え、参考資料、コードなど）を明確にする。</div>
               </div>
             </div>
 
@@ -2632,7 +2632,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('APP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('QUESTION'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
