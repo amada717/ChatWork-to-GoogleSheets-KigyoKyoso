@@ -105,6 +105,7 @@
     </style>
   </head>
   <body>
+
     <div class="container-xxl p-4">
       <h1 class="mb-4">メッセージテンプレート メーカー v.2</h1>
 
@@ -448,7 +449,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：○○プロジェクト週次進捗" required>
             </div>
 
             <!-- 重要度 -->
@@ -478,7 +479,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：プロジェクトの進捗状況を共有し、次工程への円滑な移行と潜在的な課題の早期発見により、計画通りの納期達成を確実にする" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
               </div>
             </div>        
@@ -491,8 +492,8 @@
               <label class="form-label text-nowrap mt-2">
                 【実施期間】 <span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_report_period" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_report_period" placeholder="例：2025/10/20 ～ 2025/10/26 の一週間" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 報告の対象となる業務の期間を明確にする。</div>
               </div>
             </div>
 
@@ -501,8 +502,8 @@
               <label class="form-label text-nowrap mt-2">
                 【実施事項】 <span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_action_taken" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_action_taken" rows="2" placeholder="例：デザインA案・B案のワイヤーフレーム作成、およびクライアントへのヒアリング" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 具体的に実行された作業内容を記録し、進捗の証拠とする。</div>
               </div>
             </div>
 
@@ -511,8 +512,8 @@
               <label class="form-label text-nowrap mt-2">
                 【結果/進捗】 <span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_result" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_result" rows="2" placeholder="例：ワイヤーフレームはA案で承認。初期目標の80%を達成。B案は却下" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 目標に対する達成度や、測定可能な最終結果を記録する。</div>
               </div>
             </div>
 
@@ -521,8 +522,8 @@
               <label class="form-label text-nowrap mt-2">
                 【次工程の予定】 <span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_next_action" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_next_action" rows="2" placeholder="例：デザインA案に基づき、UIデザインを10/31までに完了させる" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ この報告に続く今後のアクションプランと期限を明確にする。</div>
               </div>
             </div>
 
@@ -530,8 +531,8 @@
             <div class="item item-details align-items-start" item-type="REP_detail_issue">
               <label class="form-label text-nowrap mt-2">【トラブル/課題】</label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_issue" rows="2" placeholder="例："></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_issue" rows="2" placeholder="例：デザイナーがインフルエンザで3日休んだため、予定より遅延。代替案を手配済み"></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 発生した問題点とその対応策を記録し、ナレッジ化の対象とする。</div>
               </div>
             </div>
 
@@ -2610,7 +2611,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('NOTE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('REP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
