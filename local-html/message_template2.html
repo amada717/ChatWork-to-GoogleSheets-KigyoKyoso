@@ -674,7 +674,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：案件Y見積もり原価問題の対応方針について意見をお聞かせください" required>
             </div>
 
             <!-- 重要度 -->
@@ -704,7 +704,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：利益率低下リスクを回避し、適切な経営判断を下すため、経験豊富なメンバーから原価構造改善の具体策と意思決定の指針を得る" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
               </div>
             </div>        
@@ -717,8 +717,8 @@
               <label class="form-label text-nowrap mt-2">
                 【現状の課題】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_current_issue" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_current_issue" rows="2" placeholder="例：案件Yの見積もり原価が目標利益率を5%下回っており、赤字の可能性がある" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 相談の根本原因となる問題点を特定する。</div>
               </div>
             </div>
 
@@ -726,8 +726,8 @@
             <div class="item item-details align-items-start" item-type="CONSULT_detail_options_considered">
               <label class="form-label text-nowrap mt-2">【検討済みの選択肢】</label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_options_considered" rows="2" placeholder="例："></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_options_considered" rows="2" placeholder="例：既に材料費の圧縮を交渉済み（限界）。人件費の削減は品質低下につながるため保留"></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 既に試した解決策を記録し、重複した議論を避ける。</div>
               </div>
             </div>
 
@@ -736,8 +736,8 @@
               <label class="form-label text-nowrap mt-2">
                 【求める意見/決定】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_request" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_request" rows="2" placeholder="例：原価構造を変更すべきか、利益率を下げて受注すべきか、社長の最終判断を求める" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 相談相手に具体的にどのようなアウトプット（アドバイス、決定、情報）を求めているか明確にする。</div>
               </div>
             </div>
 
@@ -2615,7 +2615,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('REP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('CONSULT'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
