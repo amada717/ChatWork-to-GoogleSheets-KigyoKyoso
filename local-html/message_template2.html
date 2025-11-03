@@ -103,11 +103,116 @@
         height: 80%;
       } */
     </style>
+
+    <style>
+      /* メッセージ情報の説明モーダル */
+      #message-type-info table {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      #message-type-info table th{
+        text-align: center;
+      }
+      #message-type-info table th,
+      #message-type-info table td{
+        vertical-align: middle;
+      }
+      #message-type-info table th.type{
+        width: 160px;
+      }
+      #message-type-info table tbody tr td:first-child{
+        text-align: center;
+      }
+    </style>
+
   </head>
   <body>
 
     <div class="container-xxl p-4">
-      <h1 class="mb-4">メッセージテンプレート メーカー v.2</h1>
+
+      <!-- タイトル・モーダルボタン -->
+      <header class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="mb-0">メッセージテンプレート メーカー v.2</h1>
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#message-type-info">
+          メッセージ種別について
+        </button>
+      </header>
+
+
+      <!-- モーダル -->
+      <div class="modal fade" id="message-type-info" tabindex="-1" aria-labelledby="messageTypeInfoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="messageTypeInfoLabel">メッセージタイプ情報</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table table-striped">
+                <thead class="table-dark">
+                  <tr>
+                    <th class="type" scope="col">メッセージ種別</th>
+                    <th scope="col">定義と利用目的</th>
+                    <th scope="col">含むべき主要な情報</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>依頼</strong></td>
+                    <td>具体的な作業の実行や、成果物のアウトプットを正式に求める時に使用します。タスク管理と進捗追跡の起点となります。</td>
+                    <td>誰が、何を、いつまでに、どのような成果物（返答）を出すか。背景、制約事項。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>報告</strong></td>
+                    <td>プロジェクトの進捗状況、作業完了、またはトラブルの状況を関係者に共有する時に使用します。事実と結果の正確な記録を目的とします。</td>
+                    <td>実施した期間、具体的な結果（数値）、今後の予定、問題点と対応。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>相談</strong></td>
+                    <td>業務上の課題解決や、意思決定のための意見・アドバイスを求める時に使用します。</td>
+                    <td>現状の課題、検討済みの選択肢、相手に具体的に求めている意見や決定事項。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>連絡</strong></td>
+                    <td>スケジュール共有、変更通知、事務手続きなど、参加者全員への周知・共有を目的とする時に使用します。</td>
+                    <td>連絡のカテゴリ（スケジュール、資料共有など）、変更点、受け手に具体的な対応が必要か否か。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>確認</strong></td>
+                    <td>既に作成・実行した内容や対応について、認識のズレがないかをチェックしてもらう時に使用します。</td>
+                    <td>確認してほしい対象（資料名など）、確認時の判断基準、なぜその確認が必要な理由。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>承認</strong></td>
+                    <td>稟議、申請、費用計上など、権限者による正式な意思決定を求める時に使用します。</td>
+                    <td>承認対象、申請の根拠、金額や承認後の業務への影響、承認後の担当者の行動。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>質問</strong></td>
+                    <td>不明点や技術的な疑問を解消するために、専門知識を持つ相手に回答を求める時に使用します。</td>
+                    <td>質問の対象（ファイル/機能名）、事前に試したことや確認した箇所、期待する回答。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>案内</strong></td>
+                    <td>イベント、会議、新しいルールなどの情報を関係者に対して広く知らせる時に使用します。</td>
+                    <td>周知の対象範囲、イベントの日時・場所、この案内に対して対応が不要なこと。</td>
+                  </tr>
+                  <tr>
+                    <td><strong>注意</strong></td>
+                    <td>ルール遵守のお願い、リスクの注意喚起など、再発防止や意識向上を求める時に使用します。</td>
+                    <td>周知の対象範囲、注意喚起の具体的な内容、直ちに実施すべき対応や遵守事項。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
 
       <!-- tab navigation -->
