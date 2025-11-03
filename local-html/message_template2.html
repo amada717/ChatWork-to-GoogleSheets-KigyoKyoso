@@ -1324,7 +1324,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：顧客X社向け提案書（追加費用120万円）の承認依頼" required>
             </div>
 
             <!-- 重要度 -->
@@ -1354,7 +1354,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：競合他社に先んじて市場シェアを獲得するため、予算を前倒しで確保し、承認後の迅速な実行体制を整える。" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。</div>
               </div>
             </div>        
@@ -1367,8 +1367,8 @@
               <label class="form-label text-nowrap mt-2">
                 【承認対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_approval_target" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_approval_target" placeholder="例：顧客X社向け提案書（ファイル名: X社_提案_v3.pdf）の内容と費用" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ どの書類や事項を承認するのかを明確にする。</div>
               </div>
             </div>
 
@@ -1377,8 +1377,8 @@
               <label class="form-label text-nowrap mt-2">
                 【申請の根拠】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_rationale" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_rationale" rows="2" placeholder="例：競合他社に先んじて市場シェアを獲得するため、予算を前倒しで確保する必要がある" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 意思決定の正当性や、なぜこの承認が必要なのかという理由を記録する。</div>
               </div>
             </div>
 
@@ -1387,8 +1387,8 @@
               <label class="form-label text-nowrap mt-2">
                 【金額/影響】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_impact" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_impact" rows="2" placeholder="例：追加費用は120万円（開発費）。納期は2週間延長される見込み" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 承認がビジネスに与える具体的な影響（費用、スケジュールなど）を記録する。</div>
               </div>
             </div>
 
@@ -1397,8 +1397,8 @@
               <label class="form-label text-nowrap mt-2">
                 【承認後の行動】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_post_action" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_post_action" rows="2" placeholder="例：承認後、経理部の佐藤が発注手続き、開発部の田中が実装を開始する" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 承認後に誰がどのようなタスクを実行するのかを明確にする。</div>
               </div>
             </div>
 
@@ -2632,7 +2632,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('CHK'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('APP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
