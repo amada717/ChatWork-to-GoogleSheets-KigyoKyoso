@@ -1573,7 +1573,7 @@
               <label class="form-label text-nowrap mt-2">
                 【質問対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_question_target" rows="2" placeholder="例：" required></textarea>
+                <input type="text" class="form-control" name="detail_question_target"  placeholder="例：" required>
                 <div class="d-block text-secondary ms-1 mt-1">※ </div>
               </div>
             </div>
@@ -1773,6 +1773,26 @@
             
             <hr>
             <!---------------------- 詳細 ---------------------->
+
+            <!-- 【周知対象】 -->
+            <div class="item item-details align-items-start" item-type="QUESTION_detail_audience">
+              <label class="form-label text-nowrap mt-2">
+                【周知対象】<span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" name="detail_audience" placeholder="例：" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+              </div>
+            </div>
+
+            <!-- 【対応要否/緊急度】 -->
+            <div class="item item-details align-items-start" item-type="QUESTION_detail_urgency">
+              <label class="form-label text-nowrap mt-2">
+                【対応要否/緊急度】】<span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" name="detail_urgency" placeholder="例：" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+              </div>
+            </div>
 
             <hr>
             <!---------------------- 本文 ---------------------->
@@ -2297,6 +2317,24 @@
                   【質問対象】：${outputObj.detail_question_target}
                   【試したこと/確認箇所】：${outputObj.detail_pre_check}
                   【期待する回答】：${outputObj.detail_expected_answer}
+                  [hr]
+                  ${outputObj.body ? outputObj.body : '本文なし'}
+                  [hr]
+                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
+                  [/info]`;
+        case '案内':
+          return `[info]
+                  [title]${outputObj.message_type}[/title]
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  TO:（チャットワーク仕様を利用）
+                  期限: ${outputObj.deadline.replace('T', '_')}
+                  [hr]
+                  件名: ${outputObj.subject}
+                  重要度: ${outputObj.importance}
+                  目的: ${outputObj.purpose}
+                  [hr]
+                  【周知対象】：${outputObj.detail_audience}
+                  【対応要否/緊急度】：${outputObj.detail_urgency}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
