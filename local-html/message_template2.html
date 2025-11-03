@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1797,7 +1797,7 @@
             <!-- 【対応要否/緊急度】 -->
             <div class="item item-details align-items-start" item-type="GUIDE_detail_urgency">
               <label class="form-label text-nowrap mt-2">
-                【対応要否/緊急度】】<span class="text-danger">*</span></label>
+                【対応要否/緊急度】<span class="text-danger">*</span></label>
               <div class="w-100">
                 <input type="text" class="form-control" name="detail_urgency" placeholder="例1：【緊急】パスワードを直ちに変更してください / 例2：【対応不要】後日資料を確認してください" required>
                 <div class="d-block text-secondary ms-1 mt-1">※ 周知情報の緊急性や、受け手に直ちに求められる行動を明記する。</div>
@@ -1942,7 +1942,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：データ取り扱いルール違反事例について（全部門管理職対象）" required>
             </div>
 
             <!-- 重要度 -->
@@ -1972,7 +1972,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：データ取り扱いルール違反事例を共有し、類似違反の再発防止と管理職による適切な指導体制を強化するため、全部門管理職への注意喚起と改善策の実行を促す。" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。</div>
               </div>
             </div>        
@@ -1985,18 +1985,18 @@
               <label class="form-label text-nowrap mt-2">
                 【周知対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_audience" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_audience" placeholder="例：全部門管理職" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
               </div>
             </div>
 
             <!-- 【対応要否/緊急度】 -->
             <div class="item item-details align-items-start" item-type="NOTE_detail_urgency">
               <label class="form-label text-nowrap mt-2">
-                【対応要否/緊急度】】<span class="text-danger">*</span></label>
+                【対応要否/緊急度】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_urgency" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_urgency" placeholder="例：【対応要】部下への再指導を今週中に実施し、報告書を人事部へ提出してください" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 周知情報の緊急性や、受け手に直ちに求められる行動を明記する。</div>
               </div>
             </div>
 
@@ -2632,7 +2632,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('GUIDE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('NOTE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
