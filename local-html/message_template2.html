@@ -1424,7 +1424,208 @@
         
         <!-- 質問テンプレート -->
         <div class="tab-pane fade" id="pane-QUESTION" role="tabpanel" aria-labelledby="tab-QUESTION">
-          <div class="p-4">質問テンプレートの内容をここに記述</div>
+          
+          <form class="box_message box_common_QUESTION p-4 mb-2">
+
+            <!---------------------- 共通ヘッダー ---------------------->
+
+            <!-- メッセージ種別 -->
+            <div class="item item-header" item-type="message_type">
+              <label class="form-label">メッセージ種別</label>
+              <input type="text" class="form-control" name="message_type" value="質問" disabled>
+            </div>
+
+            <!-- 企業名 -->
+            <div class="item item-header" item-type="company">
+              <label class="form-label text-nowrap">企業名 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="指定なし" id="QUESTION_companyNone" checked>
+                  <label class="form-check-label" for="QUESTION_companyNone">指定なし</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="A社" id="QUESTION_companyA">
+                  <label class="form-check-label" for="QUESTION_companyA">A社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="B社" id="QUESTION_companyB">
+                  <label class="form-check-label" for="QUESTION_companyB">B社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="C社" id="QUESTION_companyC">
+                  <label class="form-check-label" for="QUESTION_companyC">C社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="D社" id="QUESTION_companyD">
+                  <label class="form-check-label" for="QUESTION_companyD">D社</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="company" value="E社" id="QUESTION_companyE">
+                  <label class="form-check-label" for="QUESTION_companyE">E社</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- TO -->
+            <div class="item item-header" item-type="to">
+              <label class="form-label text-nowrap">TO</label>
+              <input type="text" class="form-control" name="to" placeholder="チャットワーク標準機能で指定" disabled>
+            </div>
+
+            <!-- 期限 -->
+            <div class="item align-items-start">
+              <label class="form-label text-nowrap">期限 <span class="text-danger">*</span></label>
+              <div class="w-100">
+                <!-- 期限選択オプション -->
+                <div class="d-flex gap-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="QUESTION_deadline_custom" checked>
+                    <label class="form-check-label" for="QUESTION_deadline_custom">特定日時</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="本日中" id="QUESTION_deadline_today">
+                    <label class="form-check-label" for="QUESTION_deadline_today">本日中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="明日中" id="QUESTION_deadline_tomorrow">
+                    <label class="form-check-label" for="QUESTION_deadline_tomorrow">明日中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="今週中" id="QUESTION_deadline_this_week">
+                    <label class="form-check-label" for="QUESTION_deadline_this_week">今週中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="翌営業日まで" id="QUESTION_deadline_next_business_day">
+                    <label class="form-check-label" for="QUESTION_deadline_next_business_day">翌営業日まで</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="今月中" id="QUESTION_deadline_this_month">
+                    <label class="form-check-label" for="QUESTION_deadline_this_month">今月中</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="QUESTION_deadline_no_specified">
+                    <label class="form-check-label" for="QUESTION_deadline_no_specified">指定なし</label>
+                  </div>
+                </div>
+                <!-- デイトピッカー -->
+                <div class="input-group mb-3">
+                  <span class="input-group-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16">
+                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                    </svg>
+                  </span>
+                  <input type="datetime-local" class="form-control" name="deadline" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- 件名 -->
+            <div class="item item-header" item-type="subject">
+              <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+            </div>
+
+            <!-- 重要度 -->
+            <div class="item item-header" item-type="importance">
+              <label class="form-label text-nowrap">重要度 <span class="text-danger">*</span></label>
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="高" id="QUESTION_importance_h" required checked>
+                  <label class="form-check-label" for="QUESTION_importance_h">高</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="中" id="QUESTION_importance_m">
+                  <label class="form-check-label" for="QUESTION_importance_m">中</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="低" id="QUESTION_importance_l">
+                  <label class="form-check-label" for="QUESTION_importance_l">低</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="importance" value="緊急" id="QUESTION_importance_e">
+                  <label class="form-check-label" for="QUESTION_importance_e">緊急</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 目的 -->
+            <div class="item item-header align-items-start" item-type="purpose">
+              <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
+              <div class="w-100">       
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。<br>※ 悪い例：デザインをコーディングする。</div>
+              </div>
+            </div>        
+            
+            <hr>
+            <!---------------------- 詳細 ---------------------->
+
+            <!-- 【質問対象】 -->
+            <div class="item item-details align-items-start" item-type="QUESTION_detail_question_target">
+              <label class="form-label text-nowrap mt-2">
+                【質問対象】<span class="text-danger">*</span></label>
+              <div class="w-100">
+                <input type="text" class="form-control" name="detail_question_target" rows="2" placeholder="例：" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+              </div>
+            </div>
+
+            <!-- 【試したこと/確認箇所】 -->
+            <div class="item item-details align-items-start" item-type="QUESTION_detail_pre_check">
+              <label class="form-label text-nowrap mt-2">
+                【試したこと/<br>確認箇所】<span class="text-danger">*</span></label>
+              <div class="w-100">
+                <textarea class="form-control" name="detail_pre_check" rows="2" placeholder="例：" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+              </div>
+            </div>
+
+            <!-- 【期待する回答】 -->
+            <div class="item item-details align-items-start" item-type="QUESTION_detail_expected_answer">
+              <label class="form-label text-nowrap mt-2">
+                【期待する回答】<span class="text-danger">*</span></label>
+              <div class="w-100">
+                <textarea class="form-control" name="detail_expected_answer" rows="2" placeholder="例：" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+              </div>
+            </div>
+
+            <hr>
+            <!---------------------- 本文 ---------------------->
+
+            <div class="item item-body align-items-start" item-type="body">
+              <label class="form-label text-nowrap mt-2">本文</label>
+              <textarea class="form-control" name="body" rows="5" placeholder="本文を入力"></textarea>
+            </div>
+
+            <hr>
+            <!---------------------- タグ ---------------------->
+            
+            <div class="item item-tags align-items-start" item-type="tags">
+              <label class="form-label text-nowrap mt-2">タグ</label>
+              <div class="w-100">
+                <div class="tagsdiv">
+                  <div class="jaxtag">
+                    <div class="ajaxtag d-flex align-items-center gap-3">
+                      <!-- class追加 -->
+                      <input type="text" id="new-tag-QUESTION" class="form-control tag-input" placeholder="新しいタグを入力" size="16" autocomplete="off">
+                      <button type="button" class="btn btn-sm btn-outline-secondary tagadd">追加</button>
+                    </div>
+                  </div>
+                  <!-- class追加、name属性も付与 -->
+                  <input type="hidden" id="tags-QUESTION" class="tags-hidden" name="tags" value="">
+                  <!-- class追加 -->
+                  <ul class="tagchecklist tags-list list-unstyled mb-0 _mt-0" role="list"></ul>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+            <!-- テンプレートを作成する -->
+            <button type="submit" class="btn btn-primary">テンプレートを作成する（clipboardにコピー）</button>
+          
+          </form>
+
         </div>
         
         <!-- 案内テンプレート -->
@@ -1903,6 +2104,25 @@
                   [hr]
                   ${outputObj.tags ? outputObj.tags : 'タグなし'}
                   [/info]`;
+        case '質問':
+          return `[info]
+                  [title]${outputObj.message_type}[/title]
+                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
+                  TO:（チャットワーク仕様を利用）
+                  期限: ${outputObj.deadline.replace('T', '_')}
+                  [hr]
+                  件名: ${outputObj.subject}
+                  重要度: ${outputObj.importance}
+                  目的: ${outputObj.purpose}
+                  [hr]
+                  【質問対象】：${outputObj.detail_question_target}
+                  【試したこと/確認箇所】：${outputObj.detail_pre_check}
+                  【期待する回答】：${outputObj.detail_expected_answer}
+                  [hr]
+                  ${outputObj.body ? outputObj.body : '本文なし'}
+                  [hr]
+                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
+                  [/info]`;
         // 他の種別も同様に追加
         default:
           return 'テンプレート種別が未対応です。';
@@ -1968,7 +2188,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('APP'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('QUESTION'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
