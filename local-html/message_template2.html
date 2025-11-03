@@ -1118,7 +1118,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：A社プロジェクト法令遵守チェックリストの最終確認依頼" required>
             </div>
 
             <!-- 重要度 -->
@@ -1148,7 +1148,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：重要案件の承認前に法務チェックをスキップできないため、開発部門リーダー以上による最終確認プロセスを挟み、リスクを最小化する。" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。</div>
               </div>
             </div>        
@@ -1161,8 +1161,8 @@
               <label class="form-label text-nowrap mt-2">
                 【確認対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_check_target" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_check_target" placeholder="例：開発部門リーダー以上" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
               </div>
             </div>
 
@@ -1171,8 +1171,8 @@
               <label class="form-label text-nowrap mt-2">
                 【判断基準】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_criteria" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_criteria" rows="2" placeholder="例：法令遵守チェックリスト（全10項目）がすべて満たされているか" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ 確認者がOK/NGを判断するためのルールや基準を明確にする。</div>
               </div>
             </div>
 
@@ -1181,8 +1181,8 @@
               <label class="form-label text-nowrap mt-2">
                 【依頼理由】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <textarea class="form-control" name="detail_check_reason" rows="2" placeholder="例：" required></textarea>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <textarea class="form-control" name="detail_check_reason" rows="2" placeholder="例：法務チェックをスキップできない重要案件のため、承認前に最終確認プロセスを挟む" required></textarea>
+                <div class="d-block text-secondary ms-1 mt-1">※ なぜこの確認プロセスが必要なのかという理由を記録する。</div>
               </div>
             </div>
 
@@ -2632,7 +2632,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('CONTACT'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('CHK'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
