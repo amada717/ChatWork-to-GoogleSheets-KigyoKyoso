@@ -1746,7 +1746,7 @@
             <!-- 件名 -->
             <div class="item item-header" item-type="subject">
               <label class="form-label text-nowrap">件名 <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="subject" placeholder="例：" required>
+              <input type="text" class="form-control" name="subject" placeholder="例：セキュリティ強化に伴うパスワード変更のお願い" required>
             </div>
 
             <!-- 重要度 -->
@@ -1776,7 +1776,7 @@
             <div class="item item-header align-items-start" item-type="purpose">
               <label class="form-label text-nowrap mt-2">目的 <span class="text-danger">*</span></label>
               <div class="w-100">       
-                <textarea class="form-control" name="purpose" rows="2" placeholder="例：" required></textarea>
+                <textarea class="form-control" name="purpose" rows="2" placeholder="例：セキュリティ強化を目的とした全社的なパスワード変更を円滑に実施し、情報漏洩リスクを最小化するため、全従業員に迅速な対応を促す。" required></textarea>
                 <div class="d-block text-secondary ms-1 mt-1">※ メッセージの最終的な意図を定義し、<strong>読み手の行動（アウトカム）</strong>を明確にする。この目的が曖昧だと、メッセージ種別が「依頼」でも「相談」でも、受け手は次に何をすべきか判断できません。</div>
               </div>
             </div>        
@@ -1789,8 +1789,8 @@
               <label class="form-label text-nowrap mt-2">
                 【周知対象】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_audience" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_audience" placeholder="例：全従業員" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
               </div>
             </div>
 
@@ -1799,8 +1799,8 @@
               <label class="form-label text-nowrap mt-2">
                 【対応要否/緊急度】】<span class="text-danger">*</span></label>
               <div class="w-100">
-                <input type="text" class="form-control" name="detail_urgency" placeholder="例：" required>
-                <div class="d-block text-secondary ms-1 mt-1">※ </div>
+                <input type="text" class="form-control" name="detail_urgency" placeholder="例1：【緊急】パスワードを直ちに変更してください / 例2：【対応不要】後日資料を確認してください" required>
+                <div class="d-block text-secondary ms-1 mt-1">※ 周知情報の緊急性や、受け手に直ちに求められる行動を明記する。</div>
               </div>
             </div>
 
@@ -2632,7 +2632,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('QUESTION'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  setDefaultTab('GUIDE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
