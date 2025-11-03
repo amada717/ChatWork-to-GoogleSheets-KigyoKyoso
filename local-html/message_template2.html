@@ -406,7 +406,7 @@
                 <!-- 期限選択オプション -->
                 <div class="d-flex gap-4 mb-2">
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="REP_deadline_custom" checked>
+                    <input class="form-check-input" type="radio" name="deadline_type" value="特定日時" id="REP_deadline_custom">
                     <label class="form-check-label" for="REP_deadline_custom">特定日時</label>
                   </div>
                   <div class="form-check">
@@ -430,7 +430,7 @@
                     <label class="form-check-label" for="REP_deadline_this_month">今月中</label>
                   </div>
                   <div class="form-check">
-                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="REP_deadline_no_specified">
+                    <input class="form-check-input" type="radio" name="deadline_type" value="指定なし" id="REP_deadline_no_specified" checked>
                     <label class="form-check-label" for="REP_deadline_no_specified">指定なし</label>
                   </div>
                 </div>
@@ -2105,17 +2105,20 @@
           });
         });
 
-        // 初期状態設定
-        const customRadio = Array.from(deadlineTypeRadios).find(radio => radio.value === '特定日時');
-        if (customRadio) {
-          customRadio.checked = true;
-          deadlineInput.disabled = false;
-          deadlineInput.value = defaultDateTimeValue;
+        // HTMLで既にチェックされているラジオボタンを取得
+        const checkedRadio = Array.from(deadlineTypeRadios).find(radio => radio.checked);
+        if (checkedRadio) {
+          if (checkedRadio.value === '特定日時') {
+            deadlineInput.disabled = false;
+            deadlineInput.value = defaultDateTimeValue;
+          } else {
+            deadlineInput.disabled = true;
+            deadlineInput.value = checkedRadio.value;
+          }
         }
       }
 
-
-
+      
       // --- デイトピッカーの設定（汎用版） ---
       function setupFlatpickr(formElement) {
         const deadlineInput = formElement.querySelector('input[name="deadline"]');
