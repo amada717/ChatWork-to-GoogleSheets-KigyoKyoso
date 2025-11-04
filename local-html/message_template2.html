@@ -2366,7 +2366,7 @@
           if (el.name === 'to') return; // TOはdisabledなのでスキップ
           switch (el.id || el.name) {
             case 'subject':
-              el.value = 'aaaaA社 新規キャンペーンページのコーディング依頼';
+              el.value = 'A社 新規キャンペーンページのコーディング依頼';
               break;
             case 'purpose':
               el.value = '新規キャンペーンページ公開のため、デザイン最終確認とHTML化を完了させる。';
@@ -2418,7 +2418,7 @@
         
       // 実行
       const form = document.querySelector('.box_message');
-      if (form) setDummyValues(form);
+      // if (form) setDummyValues(form);
     });
     </script>
 
@@ -2697,7 +2697,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行
-  disableRequiredFields();
+  // disableRequiredFields();
 });
 </script>
 
@@ -2737,7 +2737,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行 - デフォルトタブを指定（例：報告タブ）
-  setDefaultTab('NOTE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
+  // setDefaultTab('NOTE'); // IRE, REP, CONSULT, CONTACT, CHK, APP, QUESTION, GUIDE, NOTE
 });
 </script>
 
