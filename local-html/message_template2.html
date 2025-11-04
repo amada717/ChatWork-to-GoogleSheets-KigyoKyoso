@@ -2149,6 +2149,8 @@
 
       <!-- クリップボード表示エリア -->
       <div class="mt-5 mb-1"><strong>チャットワークメッセージ プレビュー</strong></div>
+      <!-- アラート表示エリア（追加） -->
+      <div id="alert-container" class="mb-3"></div>
       <div class="box_clipboard" id="clipboard"></div>
 
 
@@ -2359,6 +2361,7 @@
       });
 
 
+      
       // --- ダミー値をセットする関数 ---
       function setDummyValues(form) {
         // テキスト・テキストエリア
@@ -2485,13 +2488,52 @@
           // クリップボードにコピー
           navigator.clipboard.writeText(cleanedText)
             .then(() => {
-              // コピー成功時の通知（任意）
+              // コピー成功時の通知
+              showCopyAlert(true);
             })
             .catch(err => {
-              // コピー失敗時の通知（任意）
+              // コピー失敗時の通知
+              console.error('クリップボードコピーエラー:', err);
+              showCopyAlert(false);
             });
         });
       });
+    
+      // コピー成功時の通知（任意）
+      function showCopyAlert(success = true) {
+        const alertContainer = document.getElementById('alert-container');
+        
+        // 既存のアラートを削除
+        alertContainer.innerHTML = '';
+        
+        // アラートタイプとメッセージを設定
+        const alertType = success ? 'success' : 'danger';
+        const message = success 
+          ? '<i class="bi bi-check-circle-fill me-2"></i>テンプレートをクリップボードにコピーしました！' 
+          : '<i class="bi bi-exclamation-triangle-fill me-2"></i>クリップボードへのコピーに失敗しました';
+        
+        // アラート要素を作成
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${alertType} alert-dismissible fade show`;
+        alert.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // アラートを表示
+        alertContainer.appendChild(alert);
+        
+        // 3秒後に自動削除
+        setTimeout(() => {
+          if (alert && alert.parentNode) {
+            // Bootstrap のアラート削除アニメーション
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }
+        }, 3000);
+      }    
+    
+    
     });
 
 
@@ -2697,7 +2739,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 実行
-  // disableRequiredFields();
+  disableRequiredFields();
 });
 </script>
 
