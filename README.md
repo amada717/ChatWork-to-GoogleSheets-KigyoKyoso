@@ -20,3 +20,7 @@
 
 - ひとまず、自分のアカウントのトークンを利用しています。
 - [Webhook](https://www.chatwork.com/service/packages/chatwork/subpackages/webhook/list.php)
+
+## メッセージテンプレートメーカー
+
+- [プロトタイプ](https://three-tree.xsrv.jp/demo/chatwork-template-generator/message_template2.html)
