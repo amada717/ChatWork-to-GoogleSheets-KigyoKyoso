@@ -55,6 +55,15 @@
       .flatpickr-input {
         max-width: 170px;
       }
+
+      /* クリップボードコピーアラート */
+      div#alert-container {
+        position: fixed;
+        z-index: 1;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
     </style>
 
     <style>
@@ -245,6 +254,11 @@
           <button class="nav-link" id="tab-NOTE" data-bs-toggle="tab" data-bs-target="#pane-NOTE" type="button" role="tab" aria-controls="pane-NOTE" aria-selected="false">注意</button>
         </li>
       </ul>
+
+      <div class="text-danger mb-3">
+        ※ 現在「必須項目」のバリデーション機能は<strong>OFF状態</strong>です。<br>
+        ※ 「依頼」テンプレートは、<strong>ダミーデータ</strong>を入れてあります。
+      </div>
 
       <!-- tab content -->
       <div class="tab-content" id="messageTypeTabContent">
@@ -2421,7 +2435,7 @@
         
       // 実行
       const form = document.querySelector('.box_message');
-      // if (form) setDummyValues(form);
+      if (form) setDummyValues(form);
     });
     </script>
 
