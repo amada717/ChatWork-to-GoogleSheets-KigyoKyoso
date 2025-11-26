@@ -2749,190 +2749,195 @@
     });
 
 
-
-
     // --- メッセージ種別ごとのテンプレート関数 --- 
     function getTemplateText(type, outputObj) {
+      // 企業名の処理
+      const companyValue = Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || '';
+      const companyLine = (companyValue && companyValue !== '指定なし') ? `企業名: ${companyValue}` : '';
+      
+      // 期限の処理
+      const deadlineValue = outputObj.deadline ? outputObj.deadline.replace('T', '_') : '';
+      const deadlineLine = (deadlineValue && deadlineValue !== '指定なし') ? `期限: ${deadlineValue}` : '';
+      
+      // 重要度の処理
+      const importanceLine = (outputObj.importance && outputObj.importance !== '指定なし') ? `重要度: ${outputObj.importance}` : '';
+      
+      // 共通ヘッダー部分を構築
+      const headerLines = [
+        '[info]',
+        `[title]${outputObj.message_type}[/title]`,
+        companyLine,
+        'TO:（チャットワーク仕様を利用）',
+        deadlineLine,
+        '[hr]',
+        `件名: ${outputObj.subject}`,
+        importanceLine,
+        `目的: ${outputObj.purpose}`,
+        '[hr]'
+      ].filter(line => line !== ''); // 空行を除去
+
+      // 値が存在する場合のみ行を追加するヘルパー関数
+      const addLineIfExists = (label, value) => {
+        return (value && value.trim() !== '' && value !== '指定なし') ? `${label}：${value}` : '';
+      };
+
+      // 詳細項目を配列で構築し、空行を除去する関数
+      const buildDetails = (detailsArray) => {
+        return detailsArray.filter(line => line !== '');
+      };
+
       switch (type) {
         case '依頼':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  期待する返答：${outputObj.expected_response}
-                  背景/前提：${outputObj.background}
-                  制約事項/補足：${outputObj.constraints}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const ireDetails = buildDetails([
+            addLineIfExists('期待する返答', outputObj.expected_response),
+            addLineIfExists('背景/前提', outputObj.background),
+            addLineIfExists('制約事項/補足', outputObj.constraints)
+          ]);
+          
+          return [...headerLines,
+                  ...ireDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '報告':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  実施期間：${outputObj.detail_report_period}
-                  実施事項：${outputObj.detail_action_taken}
-                  結果/進捗：${outputObj.detail_result}
-                  次工程の予定：${outputObj.detail_next_action}
-                  トラブル/課題：${outputObj.detail_issue}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const repDetails = buildDetails([
+            addLineIfExists('実施期間', outputObj.detail_report_period),
+            addLineIfExists('実施事項', outputObj.detail_action_taken),
+            addLineIfExists('結果/進捗', outputObj.detail_result),
+            addLineIfExists('次工程の予定', outputObj.detail_next_action),
+            addLineIfExists('トラブル/課題', outputObj.detail_issue)
+          ]);
+          
+          return [...headerLines,
+                  ...repDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '相談':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  現状の課題：${outputObj.detail_current_issue}
-                  検討済みの選択肢：${outputObj.detail_options_considered}
-                  求める意見/決定：${outputObj.detail_request}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const consultDetails = buildDetails([
+            addLineIfExists('現状の課題', outputObj.detail_current_issue),
+            addLineIfExists('検討済みの選択肢', outputObj.detail_options_considered),
+            addLineIfExists('求める意見/決定', outputObj.detail_request)
+          ]);
+          
+          return [...headerLines,
+                  ...consultDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '連絡':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  連絡種別：${outputObj.detail_contact_type}
-                  変更前の情報：${outputObj.detail_before_change}
-                  対応要否：${outputObj.detail_action_requirede}
-                  対応要の場合：${outputObj.detail_after_action}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const contactDetails = buildDetails([
+            addLineIfExists('連絡種別', outputObj.detail_contact_type),
+            addLineIfExists('変更前の情報', outputObj.detail_before_change),
+            addLineIfExists('対応要否', outputObj.detail_action_requirede),
+            addLineIfExists('対応要の場合', outputObj.detail_after_action)
+          ]);
+          
+          return [...headerLines,
+                  ...contactDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '確認':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  確認対象：${outputObj.detail_check_target}
-                  判断基準：${outputObj.detail_criteria}
-                  依頼理由：${outputObj.detail_check_reason}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const chkDetails = buildDetails([
+            addLineIfExists('確認対象', outputObj.detail_check_target),
+            addLineIfExists('判断基準', outputObj.detail_criteria),
+            addLineIfExists('依頼理由', outputObj.detail_check_reason)
+          ]);
+          
+          return [...headerLines,
+                  ...chkDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '承認':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  承認対象：${outputObj.detail_approval_target}
-                  申請の根拠：${outputObj.detail_rationale}
-                  金額/影響：${outputObj.detail_impact}
-                  承認後の行動：${outputObj.detail_post_action}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const appDetails = buildDetails([
+            addLineIfExists('承認対象', outputObj.detail_approval_target),
+            addLineIfExists('申請の根拠', outputObj.detail_rationale),
+            addLineIfExists('金額/影響', outputObj.detail_impact),
+            addLineIfExists('承認後の行動', outputObj.detail_post_action)
+          ]);
+          
+          return [...headerLines,
+                  ...appDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '質問':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  質問対象：${outputObj.detail_question_target}
-                  試したこと/確認箇所：${outputObj.detail_pre_check}
-                  期待する回答：${outputObj.detail_expected_answer}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const questionDetails = buildDetails([
+            addLineIfExists('質問対象', outputObj.detail_question_target),
+            addLineIfExists('試したこと/確認箇所', outputObj.detail_pre_check),
+            addLineIfExists('期待する回答', outputObj.detail_expected_answer)
+          ]);
+          
+          return [...headerLines,
+                  ...questionDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '案内':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  周知対象：${outputObj.detail_audience}
-                  対応要否/緊急度：${outputObj.detail_urgency}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
+          const guideDetails = buildDetails([
+            addLineIfExists('周知対象', outputObj.detail_audience),
+            addLineIfExists('対応要否/緊急度', outputObj.detail_urgency)
+          ]);
+          
+          return [...headerLines,
+                  ...guideDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         case '注意':
-          return `[info]
-                  [title]${outputObj.message_type}[/title]
-                  企業名: ${Array.isArray(outputObj.company) ? outputObj.company.join(', ') : outputObj.company || ''}
-                  TO:（チャットワーク仕様を利用）
-                  期限: ${outputObj.deadline.replace('T', '_')}
-                  [hr]
-                  件名: ${outputObj.subject}
-                  重要度: ${outputObj.importance}
-                  目的: ${outputObj.purpose}
-                  [hr]
-                  周知対象：${outputObj.detail_audience}
-                  対応要否/緊急度：${outputObj.detail_urgency}
-                  [hr]
-                  ${outputObj.body ? outputObj.body : '本文なし'}
-                  [hr]
-                  ${outputObj.tags ? outputObj.tags : 'タグなし'}
-                  [/info]`;
-        // 他の種別も同様に追加
+          const noteDetails = buildDetails([
+            addLineIfExists('周知対象', outputObj.detail_audience),
+            addLineIfExists('対応要否/緊急度', outputObj.detail_urgency)
+          ]);
+          
+          return [...headerLines,
+                  ...noteDetails,
+                  '[hr]',
+                  outputObj.body ? outputObj.body : '本文なし',
+                  '[hr]',
+                  outputObj.tags ? outputObj.tags : 'タグなし',
+                  '[/info]'
+                ].join('\n');
+        
         default:
           return 'テンプレート種別が未対応です。';
       }
-    }
-
+    }    
+        
     </script>
 
 
