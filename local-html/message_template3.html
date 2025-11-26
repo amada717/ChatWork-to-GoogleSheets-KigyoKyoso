@@ -64,6 +64,23 @@
         left: 50%;
         transform: translate(-50%, -50%);
       }
+
+      /* 詳細項目のアコーディオンコンテンツ */
+      .box_message .accordion-item:first-of-type .accordion-button {
+        border-radius: 5px;
+      }
+      .box_message .accordion-button:not(.collapsed) {
+        color: #333;
+        background-color: #c9c9c9
+      }
+      .box_message .accordion-item {
+        background-color: transparent;
+      }
+      .box_message .accordion-body {
+        padding-left: 0;
+        padding-right: 0;
+        background-color: transparent;
+      }
     </style>
 
     <style>
@@ -413,27 +430,27 @@
                 <div id="collapseIREDetails" class="accordion-collapse collapse" data-bs-parent="#accordionIREDetails">
                   <div class="accordion-body">
 
-                    <!-- 【期待する返答】 -->
+                    <!-- 期待する返答 -->
                     <div class="item item-details align-items-start" item-type="IRE_expected_response">
-                      <label class="form-label text-nowrap mt-2">【期待する返答】</label>
+                      <label class="form-label text-nowrap mt-2">期待する返答</label>
                       <div class="w-100">
                         <textarea class="form-control" name="expected_response" rows="2"  placeholder="例：添付のデザインファイルに基づいたレスポンシブなHTML/CSS一式"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 依頼者が具体的に何を成果物として求めているかを明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【背景/前提】 -->
+                    <!-- 背景/前提 -->
                     <div class="item item-details align-items-start" item-type="IRE_background">
-                      <label class="form-label text-nowrap mt-2">【背景/前提】</label>
+                      <label class="form-label text-nowrap mt-2">背景/前提</label>
                       <div class="w-100">
                         <textarea class="form-control" name="background" rows="2" placeholder="例：競合他社がリリースした新サービス対抗の緊急施策のため、最優先で対応が必要"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ なぜこの依頼が必要なのか、背景や前提条件を具体的に記入する。</div>
                       </div>
                     </div>
 
-                    <!-- 【制約事項/補足】 -->
+                    <!-- 制約事項/補足 -->
                     <div class="item item-details align-items-start" item-type="IRE_constraints">
-                      <label class="form-label text-nowrap mt-2">【制約事項/補足】</label>
+                      <label class="form-label text-nowrap mt-2">制約事項/補足</label>
                       <div class="w-100">
                         <textarea class="form-control" name="constraints" rows="2" placeholder="例：予算は5万円以内。デザインはスマホ画面のみ。IEは非対応で問題なし"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 予算、納期、技術的制約など、タスク実行上の制限事項を明記する。</div>
@@ -635,45 +652,45 @@
                   <div class="accordion-body">
             
 
-                    <!-- 【実施期間】 -->
+                    <!-- 実施期間 -->
                     <div class="item item-details align-items-start" item-type="REP_detail_report_period">
-                      <label class="form-label text-nowrap mt-2">【実施期間】</label>
+                      <label class="form-label text-nowrap mt-2">実施期間</label>
                       <div class="w-100">
                         <input type="text" class="form-control" name="detail_report_period" placeholder="例：2025/10/20 ～ 2025/10/26 の一週間">
                         <div class="d-block text-secondary ms-1 mt-1">※ 報告の対象となる業務の期間を明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【実施事項】 -->
+                    <!-- 実施事項 -->
                     <div class="item item-details align-items-start" item-type="REP_detail_action_taken">
-                      <label class="form-label text-nowrap mt-2">【実施事項】</label>
+                      <label class="form-label text-nowrap mt-2">実施事項</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_action_taken" rows="2" placeholder="例：デザインA案・B案のワイヤーフレーム作成、およびクライアントへのヒアリング"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 具体的に実行された作業内容を記録し、進捗の証拠とする。</div>
                       </div>
                     </div>
 
-                    <!-- 【結果/進捗】 -->
+                    <!-- 結果/進捗 -->
                     <div class="item item-details align-items-start" item-type="REP_detail_result">
-                      <label class="form-label text-nowrap mt-2">【結果/進捗】</label>
+                      <label class="form-label text-nowrap mt-2">結果/進捗</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_result" rows="2" placeholder="例：ワイヤーフレームはA案で承認。初期目標の80%を達成。B案は却下"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 目標に対する達成度や、測定可能な最終結果を記録する。</div>
                       </div>
                     </div>
 
-                    <!-- 【次工程の予定】 -->
+                    <!-- 次工程の予定 -->
                     <div class="item item-details align-items-start" item-type="REP_detail_next_action">
-                      <label class="form-label text-nowrap mt-2">【次工程の予定】</label>
+                      <label class="form-label text-nowrap mt-2">次工程の予定</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_next_action" rows="2" placeholder="例：デザインA案に基づき、UIデザインを10/31までに完了させる"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ この報告に続く今後のアクションプランと期限を明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【トラブル/課題】 -->
+                    <!-- トラブル/課題 -->
                     <div class="item item-details align-items-start" item-type="REP_detail_issue">
-                      <label class="form-label text-nowrap mt-2">【トラブル/課題】</label>
+                      <label class="form-label text-nowrap mt-2">トラブル/課題</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_issue" rows="2" placeholder="例：デザイナーがインフルエンザで3日休んだため、予定より遅延。代替案を手配済み"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 発生した問題点とその対応策を記録し、ナレッジ化の対象とする。</div>
@@ -876,27 +893,27 @@
 
 
 
-                    <!-- 【現状の課題】 -->
+                    <!-- 現状の課題 -->
                     <div class="item item-details align-items-start" item-type="CONSULT_detail_current_issue">
-                      <label class="form-label text-nowrap mt-2">【現状の課題】</label>
+                      <label class="form-label text-nowrap mt-2">現状の課題</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_current_issue" rows="2" placeholder="例：案件Yの見積もり原価が目標利益率を5%下回っており、赤字の可能性がある"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 相談の根本原因となる問題点を特定する。</div>
                       </div>
                     </div>
 
-                    <!-- 【検討済みの選択肢】 -->
+                    <!-- 検討済みの選択肢 -->
                     <div class="item item-details align-items-start" item-type="CONSULT_detail_options_considered">
-                      <label class="form-label text-nowrap mt-2">【検討済みの選択肢】</label>
+                      <label class="form-label text-nowrap mt-2">検討済みの選択肢</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_options_considered" rows="2" placeholder="例：既に材料費の圧縮を交渉済み（限界）。人件費の削減は品質低下につながるため保留"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 既に試した解決策を記録し、重複した議論を避ける。</div>
                       </div>
                     </div>
 
-                    <!-- 【求める意見/決定】 -->
+                    <!-- 求める意見/決定 -->
                     <div class="item item-details align-items-start" item-type="CONSULT_detail_request">
-                      <label class="form-label text-nowrap mt-2">【求める意見/決定】</label>
+                      <label class="form-label text-nowrap mt-2">求める意見/決定</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_request" rows="2" placeholder="例：原価構造を変更すべきか、利益率を下げて受注すべきか、社長の最終判断を求める"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 相談相手に具体的にどのようなアウトプット（アドバイス、決定、情報）を求めているか明確にする。</div>
@@ -1359,27 +1376,27 @@
                 <div class="accordion-body">
 
 
-                  <!-- 【確認対象】 -->
+                  <!-- 確認対象 -->
                   <div class="item item-details align-items-start" item-type="CHK_detail_check_target">
-                    <label class="form-label text-nowrap mt-2">【確認対象】</label>
+                    <label class="form-label text-nowrap mt-2">確認対象</label>
                     <div class="w-100">
                       <input type="text" class="form-control" name="detail_check_target" placeholder="例：開発部門リーダー以上">
                       <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
                     </div>
                   </div>
 
-                  <!-- 【判断基準】 -->
+                  <!-- 判断基準 -->
                   <div class="item item-details align-items-start" item-type="CHK_detail_criteria">
-                    <label class="form-label text-nowrap mt-2">【判断基準】</label>
+                    <label class="form-label text-nowrap mt-2">判断基準</label>
                     <div class="w-100">
                       <textarea class="form-control" name="detail_criteria" rows="2" placeholder="例：法令遵守チェックリスト（全10項目）がすべて満たされているか"></textarea>
                       <div class="d-block text-secondary ms-1 mt-1">※ 確認者がOK/NGを判断するためのルールや基準を明確にする。</div>
                     </div>
                   </div>
 
-                  <!-- 【依頼理由】 -->
+                  <!-- 依頼理由 -->
                   <div class="item item-details align-items-start" item-type="CHK_detail_check_reason">
-                    <label class="form-label text-nowrap mt-2">【依頼理由】</label>
+                    <label class="form-label text-nowrap mt-2">依頼理由</label>
                     <div class="w-100">
                       <textarea class="form-control" name="detail_check_reason" rows="2" placeholder="例：法務チェックをスキップできない重要案件のため、承認前に最終確認プロセスを挟む"></textarea>
                       <div class="d-block text-secondary ms-1 mt-1">※ なぜこの確認プロセスが必要なのかという理由を記録する。</div>
@@ -1579,36 +1596,36 @@
                 <div id="collapseAPPDetails" class="accordion-collapse collapse" data-bs-parent="#accordionAPPDetails">
                   <div class="accordion-body">            
 
-                    <!-- 【承認対象】 -->
+                    <!-- 承認対象 -->
                     <div class="item item-details align-items-start" item-type="APP_detail_approval_target">
-                      <label class="form-label text-nowrap mt-2">【承認対象】</label>
+                      <label class="form-label text-nowrap mt-2">承認対象</label>
                       <div class="w-100">
                         <input type="text" class="form-control" name="detail_approval_target" placeholder="例：顧客X社向け提案書（ファイル名: X社_提案_v3.pdf）の内容と費用">
                         <div class="d-block text-secondary ms-1 mt-1">※ どの書類や事項を承認するのかを明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【申請の根拠】 -->
+                    <!-- 申請の根拠 -->
                     <div class="item item-details align-items-start" item-type="APP_detail_rationale">
-                      <label class="form-label text-nowrap mt-2">【申請の根拠】</label>
+                      <label class="form-label text-nowrap mt-2">申請の根拠</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_rationale" rows="2" placeholder="例：競合他社に先んじて市場シェアを獲得するため、予算を前倒しで確保する必要がある"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 意思決定の正当性や、なぜこの承認が必要なのかという理由を記録する。</div>
                       </div>
                     </div>
 
-                    <!-- 【金額/影響】 -->
+                    <!-- 金額/影響 -->
                     <div class="item item-details align-items-start" item-type="APP_detail_impact">
-                      <label class="form-label text-nowrap mt-2">【金額/影響】</label>
+                      <label class="form-label text-nowrap mt-2">金額/影響</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_impact" rows="2" placeholder="例：追加費用は120万円（開発費）。納期は2週間延長される見込み"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 承認がビジネスに与える具体的な影響（費用、スケジュールなど）を記録する。</div>
                       </div>
                     </div>
 
-                    <!-- 【承認後の行動】 -->
+                    <!-- 承認後の行動 -->
                     <div class="item item-details align-items-start" item-type="APP_detail_post_action">
-                      <label class="form-label text-nowrap mt-2">【承認後の行動】</label>
+                      <label class="form-label text-nowrap mt-2">承認後の行動</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_post_action" rows="2" placeholder="例：承認後、経理部の佐藤が発注手続き、開発部の田中が実装を開始する"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 承認後に誰がどのようなタスクを実行するのかを明確にする。</div>
@@ -1808,27 +1825,27 @@
                 <div id="collapseQUESTIONDetails" class="accordion-collapse collapse" data-bs-parent="#accordionQUESTIONDetails">
                   <div class="accordion-body">
 
-                    <!-- 【質問対象】 -->
+                    <!-- 質問対象 -->
                     <div class="item item-details align-items-start" item-type="QUESTION_detail_question_target">
-                      <label class="form-label text-nowrap mt-2">【質問対象】</label>
+                      <label class="form-label text-nowrap mt-2">質問対象</label>
                       <div class="w-100">
                         <input type="text" class="form-control" name="detail_question_target"  placeholder="例：顧客データベース（Salesforce）の『最終更新日』フィールドの定義">
                         <div class="d-block text-secondary ms-1 mt-1">※ 質問の対象となる資料、機能、コード、用語などを特定する。</div>
                       </div>
                     </div>
 
-                    <!-- 【試したこと/確認箇所】 -->
+                    <!-- 試したこと/確認箇所 -->
                     <div class="item item-details align-items-start" item-type="QUESTION_detail_pre_check">
-                      <label class="form-label text-nowrap mt-2">【試したこと/<br>確認箇所】</label>
+                      <label class="form-label text-nowrap mt-2">試したこと/<br>確認箇所</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_pre_check" rows="2" placeholder="例：マニュアルのP.15とP.30を確認したが、リアルタイム更新なのか手動更新なのか判別できなかった"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 質問者が既に調査・検討した情報を記録し、回答者の負担を軽減する。</div>
                       </div>
                     </div>
 
-                    <!-- 【期待する回答】 -->
+                    <!-- 期待する回答 -->
                     <div class="item item-details align-items-start" item-type="QUESTION_detail_expected_answer">
-                      <label class="form-label text-nowrap mt-2">【期待する回答】</label>
+                      <label class="form-label text-nowrap mt-2">期待する回答</label>
                       <div class="w-100">
                         <textarea class="form-control" name="detail_expected_answer" rows="2" placeholder="例：リアルタイム更新か否か、およびマニュアルの該当ページを教えてほしい"></textarea>
                         <div class="d-block text-secondary ms-1 mt-1">※ 回答者に具体的に何を求めているか（答え、参考資料、コードなど）を明確にする。</div>
@@ -2028,20 +2045,20 @@
                 <div id="collapseGUIDEDetails" class="accordion-collapse collapse" data-bs-parent="#accordionGUIDEDetails">
                   <div class="accordion-body">
 
-                    <!-- 【周知対象】 -->
+                    <!-- 周知対象 -->
                     <div class="item item-details align-items-start" item-type="GUIDE_detail_audience">
-                      <label class="form-label text-nowrap mt-2">【周知対象】</label>
+                      <label class="form-label text-nowrap mt-2">周知対象</label>
                       <div class="w-100">
                         <input type="text" class="form-control" name="detail_audience" placeholder="例：全従業員">
                         <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【対応要否/緊急度】 -->
+                    <!-- 対応要否/緊急度 -->
                     <div class="item item-details align-items-start" item-type="GUIDE_detail_urgency">
-                      <label class="form-label text-nowrap mt-2">【対応要否/緊急度】</label>
+                      <label class="form-label text-nowrap mt-2">対応要否/緊急度</label>
                       <div class="w-100">
-                        <input type="text" class="form-control" name="detail_urgency" placeholder="例1：【緊急】パスワードを直ちに変更してください / 例2：【対応不要】後日資料を確認してください">
+                        <input type="text" class="form-control" name="detail_urgency" placeholder="例1：緊急パスワードを直ちに変更してください / 例2：対応不要後日資料を確認してください">
                         <div class="d-block text-secondary ms-1 mt-1">※ 周知情報の緊急性や、受け手に直ちに求められる行動を明記する。</div>
                       </div>
                     </div>
@@ -2239,20 +2256,20 @@
                 <div id="collapseNOTEDetails" class="accordion-collapse collapse" data-bs-parent="#accordionNOTEDetails">
                   <div class="accordion-body">
 
-                    <!-- 【周知対象】 -->
+                    <!-- 周知対象 -->
                     <div class="item item-details align-items-start" item-type="NOTE_detail_audience">
-                      <label class="form-label text-nowrap mt-2">【周知対象】</label>
+                      <label class="form-label text-nowrap mt-2">周知対象</label>
                       <div class="w-100">
                         <input type="text" class="form-control" name="detail_audience" placeholder="例：全部門管理職">
                         <div class="d-block text-secondary ms-1 mt-1">※ 情報を受け取るべき対象者や範囲を明確にする。</div>
                       </div>
                     </div>
 
-                    <!-- 【対応要否/緊急度】 -->
+                    <!-- 対応要否/緊急度 -->
                     <div class="item item-details align-items-start" item-type="NOTE_detail_urgency">
-                      <label class="form-label text-nowrap mt-2">【対応要否/緊急度】</label>
+                      <label class="form-label text-nowrap mt-2">対応要否/緊急度</label>
                       <div class="w-100">
-                        <input type="text" class="form-control" name="detail_urgency" placeholder="例：【対応要】部下への再指導を今週中に実施し、報告書を人事部へ提出してください" >
+                        <input type="text" class="form-control" name="detail_urgency" placeholder="例：対応要部下への再指導を今週中に実施し、報告書を人事部へ提出してください" >
                         <div class="d-block text-secondary ms-1 mt-1">※ 周知情報の緊急性や、受け手に直ちに求められる行動を明記する。</div>
                       </div>
                     </div>
@@ -2712,9 +2729,9 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【期待する返答】：${outputObj.expected_response}
-                  【背景/前提】：${outputObj.background}
-                  【制約事項/補足】：${outputObj.constraints}
+                  期待する返答：${outputObj.expected_response}
+                  背景/前提：${outputObj.background}
+                  制約事項/補足：${outputObj.constraints}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2731,11 +2748,11 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【実施期間】：${outputObj.detail_report_period}
-                  【実施事項】：${outputObj.detail_action_taken}
-                  【結果/進捗】：${outputObj.detail_result}
-                  【次工程の予定】：${outputObj.detail_next_action}
-                  【トラブル/課題】：${outputObj.detail_issue}
+                  実施期間：${outputObj.detail_report_period}
+                  実施事項：${outputObj.detail_action_taken}
+                  結果/進捗：${outputObj.detail_result}
+                  次工程の予定：${outputObj.detail_next_action}
+                  トラブル/課題：${outputObj.detail_issue}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2752,9 +2769,9 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【現状の課題】：${outputObj.detail_current_issue}
-                  【検討済みの選択肢】：${outputObj.detail_options_considered}
-                  【求める意見/決定】：${outputObj.detail_request}
+                  現状の課題：${outputObj.detail_current_issue}
+                  検討済みの選択肢：${outputObj.detail_options_considered}
+                  求める意見/決定：${outputObj.detail_request}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2771,10 +2788,10 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【連絡種別】：${outputObj.detail_contact_type}
-                  【変更前の情報】：${outputObj.detail_before_change}
-                  【対応要否】：${outputObj.detail_action_requirede}
-                  【対応要の場合】：${outputObj.detail_after_action}
+                  連絡種別：${outputObj.detail_contact_type}
+                  変更前の情報：${outputObj.detail_before_change}
+                  対応要否：${outputObj.detail_action_requirede}
+                  対応要の場合：${outputObj.detail_after_action}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2791,9 +2808,9 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【確認対象】：${outputObj.detail_check_target}
-                  【判断基準】：${outputObj.detail_criteria}
-                  【依頼理由】：${outputObj.detail_check_reason}
+                  確認対象：${outputObj.detail_check_target}
+                  判断基準：${outputObj.detail_criteria}
+                  依頼理由：${outputObj.detail_check_reason}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2810,10 +2827,10 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【承認対象】：${outputObj.detail_approval_target}
-                  【申請の根拠】：${outputObj.detail_rationale}
-                  【金額/影響】：${outputObj.detail_impact}
-                  【承認後の行動】：${outputObj.detail_post_action}
+                  承認対象：${outputObj.detail_approval_target}
+                  申請の根拠：${outputObj.detail_rationale}
+                  金額/影響：${outputObj.detail_impact}
+                  承認後の行動：${outputObj.detail_post_action}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2830,9 +2847,9 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【質問対象】：${outputObj.detail_question_target}
-                  【試したこと/確認箇所】：${outputObj.detail_pre_check}
-                  【期待する回答】：${outputObj.detail_expected_answer}
+                  質問対象：${outputObj.detail_question_target}
+                  試したこと/確認箇所：${outputObj.detail_pre_check}
+                  期待する回答：${outputObj.detail_expected_answer}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2849,8 +2866,8 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【周知対象】：${outputObj.detail_audience}
-                  【対応要否/緊急度】：${outputObj.detail_urgency}
+                  周知対象：${outputObj.detail_audience}
+                  対応要否/緊急度：${outputObj.detail_urgency}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
@@ -2867,8 +2884,8 @@
                   重要度: ${outputObj.importance}
                   目的: ${outputObj.purpose}
                   [hr]
-                  【周知対象】：${outputObj.detail_audience}
-                  【対応要否/緊急度】：${outputObj.detail_urgency}
+                  周知対象：${outputObj.detail_audience}
+                  対応要否/緊急度：${outputObj.detail_urgency}
                   [hr]
                   ${outputObj.body ? outputObj.body : '本文なし'}
                   [hr]
