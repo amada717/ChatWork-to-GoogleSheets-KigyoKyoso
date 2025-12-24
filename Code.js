@@ -31,14 +31,29 @@ function doPost(e) {
     const scriptProperties = PropertiesService.getScriptProperties();
     const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
     const SHEET_NAME = 'room_' + room_id;
+    const LOG_SHEET_NAME = 'log_room_' + room_id;
 
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME)
-      || SpreadsheetApp.getActiveSpreadsheet().insertSheet(SHEET_NAME);
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // メインシート（編集可能）
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME)
+      || spreadsheet.insertSheet(SHEET_NAME);
 
-    // ヘッダー作成（初回のみ）
+    // ログシート（編集履歴保存用）
+    const logSheet = spreadsheet.getSheetByName(LOG_SHEET_NAME)
+      || spreadsheet.insertSheet(LOG_SHEET_NAME);
+
+    // メインシートのヘッダー作成（初回のみ）
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
         'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
+      ]);
+    }
+
+    // ログシートのヘッダー作成（初回のみ）
+    if (logSheet.getLastRow() === 0) {
+      logSheet.appendRow([
+        'log_id', 'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'action_type', 'action_at'
       ]);
     }
 
@@ -65,6 +80,9 @@ function doPost(e) {
     // 既存メッセージのチェック
     const existingRow = findRowByColumn(sheet, 'message_id', message_id);
 
+    // ログID生成（タイムスタンプ + message_id）
+    const log_id = new Date().getTime() + '_' + message_id;
+
     if (existingRow) {
       // 既存の場合は更新
       Logger.log('Message exists - updating row: ' + existingRow);
@@ -81,6 +99,21 @@ function doPost(e) {
       };
       
       updateRowByHeaders(sheet, existingRow, dataObj);
+
+      // ログシートに更新履歴を追加
+      const logDataObj = {
+        'log_id': log_id,
+        'message_id': message_id,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'action_type': 'updated',
+        'action_at': new Date()
+      };
+      
+      appendRowByHeaders(logSheet, logDataObj);
       
     } else {
       // 新規の場合は追加
@@ -98,6 +131,21 @@ function doPost(e) {
       };
       
       appendRowByHeaders(sheet, dataObj);
+
+      // ログシートに新規作成履歴を追加
+      const logDataObj = {
+        'log_id': log_id,
+        'message_id': message_id,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'action_type': 'created',
+        'action_at': send_time
+      };
+      
+      appendRowByHeaders(logSheet, logDataObj);
     }
 
     Logger.log('=== doPost completed successfully ===');
