@@ -170,8 +170,9 @@ function parseTemplateMessage(body) {
   // どちらか一方でも欠けている場合はnullを返す
   if (!subjectMatch || !purposeMatch) return null;
   
-  const subject = subjectMatch[1].trim();
-  const purpose = purposeMatch[1].trim();
+  // 全角英数字を半角に変換
+  const subject = toHalfWidth(subjectMatch[1].trim());
+  const purpose = toHalfWidth(purposeMatch[1].trim());
   
   // 本文の抽出（[hr]の後）
   const bodyMatch = cleanBody.match(/\[hr\]\s*([\s\S]+)$/);
@@ -238,7 +239,7 @@ function findRowByColumn(sheet, columnName, value) {
  * 全角英数字を半角に変換する
  */ 
 function toHalfWidth(str) {
-  return str.replace(/[Ā-ー]/g, function(s) {
+  return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
     return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
   });
 }
