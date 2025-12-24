@@ -86,17 +86,21 @@ function doPost(e) {
     // ログID生成（タイムスタンプ + message_id）
     const log_id = new Date().getTime() + '_' + message_id;
 
-    if (existingRow) {
+   if (existingRow) {
       // 既存の場合: 内容変更チェック
       Logger.log('Message exists - checking for changes');
       
       // 既存データを取得
+      const existingFromAccount = sheet.getRange(existingRow, getColumnIndex(sheet, 'from_account')).getValue();
+      const existingToAccounts = sheet.getRange(existingRow, getColumnIndex(sheet, 'to_accounts')).getValue();
       const existingSubject = sheet.getRange(existingRow, getColumnIndex(sheet, 'subject')).getValue();
       const existingPurpose = sheet.getRange(existingRow, getColumnIndex(sheet, 'purpose')).getValue();
       const existingBody = sheet.getRange(existingRow, getColumnIndex(sheet, 'body')).getValue();
       
       // 内容が変更されているかチェック
       const isChanged = (
+        existingFromAccount !== fromAccount ||
+        existingToAccounts !== toAccounts ||
         existingSubject !== templateData.subject ||
         existingPurpose !== templateData.purpose ||
         existingBody !== templateData.body
@@ -138,7 +142,6 @@ function doPost(e) {
       };
       
       appendRowByHeaders(logSheet, logDataObj);
-      
     } else {
       // 新規の場合は追加
       Logger.log('New message - appending row');
