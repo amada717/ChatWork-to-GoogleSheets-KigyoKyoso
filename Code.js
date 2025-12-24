@@ -28,16 +28,7 @@ function doPost(e) {
     Logger.log('Message ID: ' + message_id);
     Logger.log('Account ID: ' + account_id);
     
-    // スクリプトプロパティで重複チェック（高速）
     const scriptProperties = PropertiesService.getScriptProperties();
-    const processedKey = 'processed_' + message_id;
-    const alreadyProcessed = scriptProperties.getProperty(processedKey);
-    
-    if (alreadyProcessed) {
-      Logger.log('Message already processed (cached) - skipping');
-      return ContentService.createTextOutput('already processed');
-    }
-    
     const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
     const SHEET_NAME = 'room_' + room_id;
 
@@ -49,16 +40,6 @@ function doPost(e) {
       sheet.appendRow([
         'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
       ]);
-    }
-
-    // シートでも重複チェック（二重チェック）
-    const existingRow = findRowByColumn(sheet, 'message_id', message_id);
-    
-    if (existingRow) {
-      Logger.log('Message already exists in sheet - skipping (row: ' + existingRow + ')');
-      // キャッシュに記録
-      scriptProperties.setProperty(processedKey, 'true');
-      return ContentService.createTextOutput('already exists');
     }
 
     // 投稿者名を取得
@@ -81,24 +62,43 @@ function doPost(e) {
       ? new Date(data.webhook_event.send_time * 1000)
       : new Date();
 
-    // データオブジェクトを作成
-    const dataObj = {
-      'message_id': message_id,
-      'from_account': fromAccount,
-      'to_accounts': toAccounts,
-      'subject': templateData.subject,
-      'purpose': templateData.purpose,
-      'body': templateData.body,
-      'created_at': send_time,
-      'updated_at': send_time
-    };
+    // 既存メッセージのチェック
+    const existingRow = findRowByColumn(sheet, 'message_id', message_id);
 
-    // 新規追加
-    Logger.log('Appending new row');
-    appendRowByHeaders(sheet, dataObj);
-    
-    // 処理済みとしてキャッシュに記録
-    scriptProperties.setProperty(processedKey, new Date().toISOString());
+    if (existingRow) {
+      // 既存の場合は更新
+      Logger.log('Message exists - updating row: ' + existingRow);
+      
+      const dataObj = {
+        'message_id': message_id,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'created_at': sheet.getRange(existingRow, getColumnIndex(sheet, 'created_at')).getValue(), // 元のcreated_atを保持
+        'updated_at': new Date() // 更新日時を現在時刻に
+      };
+      
+      updateRowByHeaders(sheet, existingRow, dataObj);
+      
+    } else {
+      // 新規の場合は追加
+      Logger.log('New message - appending row');
+      
+      const dataObj = {
+        'message_id': message_id,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'created_at': send_time,
+        'updated_at': send_time
+      };
+      
+      appendRowByHeaders(sheet, dataObj);
+    }
 
     Logger.log('=== doPost completed successfully ===');
     return ContentService.createTextOutput('ok');
