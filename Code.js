@@ -1,9 +1,6 @@
 /**
  * チャットワークのWebhookからのPOSTリクエストを処理する
  */ 
-/**
- * チャットワークのWebhookからのPOSTリクエストを処理する
- */ 
 function doPost(e) {
   // ロックを取得（最大30秒待機）
   const lock = LockService.getScriptLock();
@@ -24,32 +21,51 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const room_id = data.webhook_event.room_id;
     const message_id = data.webhook_event.message_id;
+    const account_id = data.webhook_event.account_id;
     const body = data.webhook_event.body;
     
     Logger.log('Room ID: ' + room_id);
     Logger.log('Message ID: ' + message_id);
+    Logger.log('Account ID: ' + account_id);
     
+    // スクリプトプロパティで重複チェック（高速）
+    const scriptProperties = PropertiesService.getScriptProperties();
+    const processedKey = 'processed_' + message_id;
+    const alreadyProcessed = scriptProperties.getProperty(processedKey);
+    
+    if (alreadyProcessed) {
+      Logger.log('Message already processed (cached) - skipping');
+      return ContentService.createTextOutput('already processed');
+    }
+    
+    const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
     const SHEET_NAME = 'room_' + room_id;
 
-    const scriptProperties = PropertiesService.getScriptProperties();
-    const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME)
       || SpreadsheetApp.getActiveSpreadsheet().insertSheet(SHEET_NAME);
 
     // ヘッダー作成（初回のみ）
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        'message_id', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
+        'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
       ]);
     }
 
-    // 重複チェック: 既に処理済みか確認（Lock内で再確認）
+    // シートでも重複チェック（二重チェック）
     const existingRow = findRowByColumn(sheet, 'message_id', message_id);
     
     if (existingRow) {
-      Logger.log('Message already exists - skipping (row: ' + existingRow + ')');
+      Logger.log('Message already exists in sheet - skipping (row: ' + existingRow + ')');
+      // キャッシュに記録
+      scriptProperties.setProperty(processedKey, 'true');
       return ContentService.createTextOutput('already exists');
     }
+
+    // 投稿者名を取得
+    const fromAccount = getAccountName(CHATWORK_TOKEN, room_id, account_id);
+    
+    // 宛先を抽出
+    const toAccounts = extractToAccounts(body, CHATWORK_TOKEN, room_id);
 
     // テンプレートデータをパース
     const templateData = parseTemplateMessage(body);
@@ -68,6 +84,8 @@ function doPost(e) {
     // データオブジェクトを作成
     const dataObj = {
       'message_id': message_id,
+      'from_account': fromAccount,
+      'to_accounts': toAccounts,
       'subject': templateData.subject,
       'purpose': templateData.purpose,
       'body': templateData.body,
@@ -78,6 +96,9 @@ function doPost(e) {
     // 新規追加
     Logger.log('Appending new row');
     appendRowByHeaders(sheet, dataObj);
+    
+    // 処理済みとしてキャッシュに記録
+    scriptProperties.setProperty(processedKey, new Date().toISOString());
 
     Logger.log('=== doPost completed successfully ===');
     return ContentService.createTextOutput('ok');
@@ -95,12 +116,56 @@ function doPost(e) {
 
 
 /**
+ * アカウントIDから名前を取得
+ */
+function getAccountName(token, roomId, accountId) {
+  try {
+    const url = `https://api.chatwork.com/v2/rooms/${roomId}/members`;
+    const options = {
+      method: 'get',
+      headers: { 'X-ChatWorkToken': token }
+    };
+    const response = UrlFetchApp.fetch(url, options);
+    const members = JSON.parse(response.getContentText());
+    const member = members.find(m => m.account_id === accountId);
+    return member ? member.name : 'ID:' + accountId;
+  } catch (error) {
+    Logger.log('Error getting account name: ' + error.toString());
+    return 'ID:' + accountId;
+  }
+}
+
+
+/**
+ * メッセージ本文からTO情報を抽出
+ */
+function extractToAccounts(body, token, roomId) {
+  // [To:1234567] 形式を抽出
+  const toPattern = /\[To:(\d+)\]/g;
+  const matches = [...body.matchAll(toPattern)];
+  
+  if (matches.length === 0) {
+    return '指定なし';
+  }
+  
+  // アカウントIDから名前を取得
+  const accountIds = matches.map(match => parseInt(match[1]));
+  const names = accountIds.map(id => getAccountName(token, roomId, id));
+  
+  return names.join(', ');
+}
+
+
+/**
  * チャットワークメッセージからテンプレートデータを抽出
  */
 function parseTemplateMessage(body) {
+  // [To:xxx]を除去してからパース
+  const cleanBody = body.replace(/\[To:\d+\][^\n]*/g, '').trim();
+  
   // <件名>と<目的>の抽出
-  const subjectMatch = body.match(/<件名>(.+?)(?=\n|<|$)/s);
-  const purposeMatch = body.match(/<目的>(.+?)(?=\n|\[|$)/s);
+  const subjectMatch = cleanBody.match(/<件名>(.+?)(?=\n|<|$)/s);
+  const purposeMatch = cleanBody.match(/<目的>(.+?)(?=\n|\[|$)/s);
   
   // どちらか一方でも欠けている場合はnullを返す
   if (!subjectMatch || !purposeMatch) return null;
@@ -109,7 +174,7 @@ function parseTemplateMessage(body) {
   const purpose = purposeMatch[1].trim();
   
   // 本文の抽出（[hr]の後）
-  const bodyMatch = body.match(/\[hr\]\s*([\s\S]+)$/);
+  const bodyMatch = cleanBody.match(/\[hr\]\s*([\s\S]+)$/);
   const bodyText = bodyMatch ? bodyMatch[1].trim() : '';
   
   return {
