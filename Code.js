@@ -77,8 +77,11 @@ function doPost(e) {
       ? new Date(data.webhook_event.send_time * 1000)
       : new Date();
 
+    // ChatworkリンクURL生成
+    const chatworkLink = `https://www.chatwork.com/#!rid${room_id}-${message_id}`;
+
     // 既存メッセージのチェック
-    const existingRow = findRowByColumn(sheet, 'message_id', message_id);
+    const existingRow = findRowByColumn(sheet, 'message_id', chatworkLink);
 
     // ログID生成（タイムスタンプ + message_id）
     const log_id = new Date().getTime() + '_' + message_id;
@@ -88,7 +91,7 @@ function doPost(e) {
       Logger.log('Message exists - updating row: ' + existingRow);
       
       const dataObj = {
-        'message_id': message_id,
+        'message_id': chatworkLink, // リンク形式で保存
         'from_account': fromAccount,
         'to_accounts': toAccounts,
         'subject': templateData.subject,
@@ -103,7 +106,7 @@ function doPost(e) {
       // ログシートに更新履歴を追加
       const logDataObj = {
         'log_id': log_id,
-        'message_id': message_id,
+        'message_id': chatworkLink, // リンク形式で保存
         'from_account': fromAccount,
         'to_accounts': toAccounts,
         'subject': templateData.subject,
@@ -120,7 +123,7 @@ function doPost(e) {
       Logger.log('New message - appending row');
       
       const dataObj = {
-        'message_id': message_id,
+        'message_id': chatworkLink, // リンク形式で保存
         'from_account': fromAccount,
         'to_accounts': toAccounts,
         'subject': templateData.subject,
@@ -135,7 +138,7 @@ function doPost(e) {
       // ログシートに新規作成履歴を追加
       const logDataObj = {
         'log_id': log_id,
-        'message_id': message_id,
+        'message_id': chatworkLink, // リンク形式で保存
         'from_account': fromAccount,
         'to_accounts': toAccounts,
         'subject': templateData.subject,
