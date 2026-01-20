@@ -1,4 +1,4 @@
 # ローカル作業用だけ除外
-local-html/
-test.html
-message_template.html
+index.html
+notes/**
+local-html/**
