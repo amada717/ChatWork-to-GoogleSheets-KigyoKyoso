@@ -2,74 +2,74 @@
  * チャットワークのWebhookからのPOSTリクエストを処理する
  */ 
 function doPost(e) {
-  // デバッグ用ログ
-  Logger.log('doPost called');
-  Logger.log(JSON.stringify(e));
-
+  // ロックを取得（最大30秒待機）
+  const lock = LockService.getScriptLock();
+  
   try {
+    lock.waitLock(30000);
+  } catch (error) {
+    Logger.log('Could not obtain lock after 30 seconds.');
+    return ContentService.createTextOutput('locked');
+  }
+  
+  try {
+    // デバッグ用ログ
+    Logger.log('=== doPost called ===');
+    Logger.log('Timestamp: ' + new Date());
+    
     // Webhookからのデータをパース
     const data = JSON.parse(e.postData.contents);
     const room_id = data.webhook_event.room_id;
-    const SHEET_NAME = 'room_' + room_id;
-
+    const message_id = data.webhook_event.message_id;
+    const account_id = data.webhook_event.account_id;
+    const body = data.webhook_event.body;
+    
+    Logger.log('Room ID: ' + room_id);
+    Logger.log('Message ID: ' + message_id);
+    Logger.log('Account ID: ' + account_id);
+    
     const scriptProperties = PropertiesService.getScriptProperties();
     const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME)
-      || SpreadsheetApp.getActiveSpreadsheet().insertSheet(SHEET_NAME);
+    const SHEET_NAME = 'room_' + room_id;
+    const LOG_SHEET_NAME = 'log_room_' + room_id;
 
-    // ヘッダー作成（初回のみ）
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // メインシート（編集可能）
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME)
+      || spreadsheet.insertSheet(SHEET_NAME);
+
+    // ログシート（編集履歴保存用）
+    const logSheet = spreadsheet.getSheetByName(LOG_SHEET_NAME)
+      || spreadsheet.insertSheet(LOG_SHEET_NAME);
+
+    // メインシートのヘッダー作成（初回のみ）
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        'message_id', 'message_type', 'company', 'deadline', 
-        'subject', 'importance', 'purpose', 'body', 'tags', 
-        'details_json', 'created_at', 'updated_at'
+        'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
       ]);
     }
 
-    // メッセージ情報を取得
-    const message_id = data.webhook_event.message_id;
-    const body = data.webhook_event.body;
+    // ログシートのヘッダー作成（初回のみ）
+    if (logSheet.getLastRow() === 0) {
+      logSheet.appendRow([
+        'log_id', 'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'action_type', 'action_at'
+      ]);
+    }
+
+    // 投稿者名を取得
+    const fromAccount = getAccountName(CHATWORK_TOKEN, room_id, account_id);
+    
+    // 宛先を抽出
+    const toAccounts = extractToAccounts(body, CHATWORK_TOKEN, room_id);
 
     // テンプレートデータをパース
     const templateData = parseTemplateMessage(body);
 
     // テンプレート形式でない場合はスキップ
     if (!templateData) {
+      Logger.log('Not a template message - skipping');
       return ContentService.createTextOutput('not a template message');
-    }
-
-    // ルーム名取得
-    let room_name = '';
-    try {
-      const roomInfoUrl = `https://api.chatwork.com/v2/rooms/${room_id}`;
-      const roomInfoOptions = {
-        method: 'get',
-        headers: { 'X-ChatWorkToken': CHATWORK_TOKEN }
-      };
-      const roomInfoResponse = UrlFetchApp.fetch(roomInfoUrl, roomInfoOptions);
-      const roomInfo = JSON.parse(roomInfoResponse.getContentText());
-      room_name = roomInfo.name;
-    } catch (error) {
-      Logger.log('ルーム名取得エラー: ' + error.toString());
-      room_name = 'unknown';
-    }
-
-    // アカウント名取得
-    let account = '';
-    try {
-      const account_id = data.webhook_event.account_id;
-      const accountUrl = `https://api.chatwork.com/v2/rooms/${room_id}/members`;
-      const accountOptions = {
-        method: 'get',
-        headers: { 'X-ChatWorkToken': CHATWORK_TOKEN }
-      };
-      const accountResponse = UrlFetchApp.fetch(accountUrl, accountOptions);
-      const members = JSON.parse(accountResponse.getContentText());
-      const member = members.find(m => m.account_id === account_id);
-      account = member ? member.name : 'unknown';
-    } catch (error) {
-      Logger.log('アカウント名取得エラー: ' + error.toString());
-      account = 'unknown';
     }
 
     // 送信日時
@@ -77,58 +77,157 @@ function doPost(e) {
       ? new Date(data.webhook_event.send_time * 1000)
       : new Date();
 
-    // 既存メッセージの更新チェック
-    const dataRange = sheet.getDataRange();
-    const values = dataRange.getValues();
-    let updated = false;
+    // ChatworkリンクURL生成
+    const chatworkLink = `https://www.chatwork.com/#!rid${room_id}-${message_id}`;
 
-    for (let i = 1; i < values.length; i++) {
-      if (values[i][0] == message_id) {
-        // 既存行を更新
-        sheet.getRange(i + 1, 1, 1, 12).setValues([[
-          message_id,
-          templateData.message_type,
-          templateData.company,
-          templateData.deadline,
-          templateData.subject,
-          templateData.importance,
-          templateData.purpose,
-          templateData.body,
-          templateData.tags,
-          JSON.stringify(templateData.details),
-          send_time,
-          new Date()
-        ]]);
-        updated = true;
-        break;
+    // メインシートでの既存メッセージのチェック
+    const existingRow = findRowByColumn(sheet, 'message_id', chatworkLink);
+
+    // ログID生成（タイムスタンプ + message_id）
+    const log_id = new Date().getTime() + '_' + message_id;
+
+   if (existingRow) {
+      // 既存の場合: 内容変更チェック
+      Logger.log('Message exists - checking for changes');
+      
+      // 既存データを取得
+      const existingFromAccount = sheet.getRange(existingRow, getColumnIndex(sheet, 'from_account')).getValue();
+      const existingToAccounts = sheet.getRange(existingRow, getColumnIndex(sheet, 'to_accounts')).getValue();
+      const existingSubject = sheet.getRange(existingRow, getColumnIndex(sheet, 'subject')).getValue();
+      const existingPurpose = sheet.getRange(existingRow, getColumnIndex(sheet, 'purpose')).getValue();
+      const existingBody = sheet.getRange(existingRow, getColumnIndex(sheet, 'body')).getValue();
+      
+      // 内容が変更されているかチェック
+      const isChanged = (
+        existingFromAccount !== fromAccount ||
+        existingToAccounts !== toAccounts ||
+        existingSubject !== templateData.subject ||
+        existingPurpose !== templateData.purpose ||
+        existingBody !== templateData.body
+      );
+      
+      if (!isChanged) {
+        // 内容が同じ場合はスキップ（Chatworkの重複Webhook対策）
+        Logger.log('No changes detected - skipping duplicate webhook');
+        return ContentService.createTextOutput('no changes');
       }
+      
+      // 内容が変更されている場合は更新
+      Logger.log('Changes detected - updating row: ' + existingRow);
+      
+      const dataObj = {
+        'message_id': chatworkLink,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'created_at': sheet.getRange(existingRow, getColumnIndex(sheet, 'created_at')).getValue(),
+        'updated_at': new Date()
+      };
+      
+      updateRowByHeaders(sheet, existingRow, dataObj);
+
+      // ログシートに更新履歴を追加
+      const logDataObj = {
+        'log_id': log_id,
+        'message_id': chatworkLink,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'action_type': 'updated',
+        'action_at': new Date()
+      };
+      
+      appendRowByHeaders(logSheet, logDataObj);
+    } else {
+      // 新規の場合は追加
+      Logger.log('New message - appending row');
+      
+      const dataObj = {
+        'message_id': chatworkLink,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'created_at': send_time,
+        'updated_at': send_time
+      };
+      
+      appendRowByHeaders(sheet, dataObj);
+
+      // ログシートに新規作成履歴を追加
+      const logDataObj = {
+        'log_id': log_id,
+        'message_id': chatworkLink,
+        'from_account': fromAccount,
+        'to_accounts': toAccounts,
+        'subject': templateData.subject,
+        'purpose': templateData.purpose,
+        'body': templateData.body,
+        'action_type': 'created',
+        'action_at': send_time
+      };
+      
+      appendRowByHeaders(logSheet, logDataObj);
     }
 
-    // 新規追加
-    if (!updated) {
-      sheet.appendRow([
-        message_id,
-        templateData.message_type,
-        templateData.company,
-        templateData.deadline,
-        templateData.subject,
-        templateData.importance,
-        templateData.purpose,
-        templateData.body,
-        templateData.tags,
-        JSON.stringify(templateData.details),
-        send_time,
-        send_time
-      ]);
-    }
-
+    Logger.log('=== doPost completed successfully ===');
     return ContentService.createTextOutput('ok');
 
   } catch (error) {
-    Logger.log('Error in doPost: ' + error.toString());
+    Logger.log('=== Error in doPost ===');
+    Logger.log('Error: ' + error.toString());
     Logger.log('Error stack: ' + error.stack);
     return ContentService.createTextOutput('error: ' + error.toString());
+  } finally {
+    // ロックを解放
+    lock.releaseLock();
   }
+}
+
+
+/**
+ * アカウントIDから名前を取得
+ */
+function getAccountName(token, roomId, accountId) {
+  try {
+    const url = `https://api.chatwork.com/v2/rooms/${roomId}/members`;
+    const options = {
+      method: 'get',
+      headers: { 'X-ChatWorkToken': token }
+    };
+    const response = UrlFetchApp.fetch(url, options);
+    const members = JSON.parse(response.getContentText());
+    const member = members.find(m => m.account_id === accountId);
+    return member ? member.name : 'ID:' + accountId;
+  } catch (error) {
+    Logger.log('Error getting account name: ' + error.toString());
+    return 'ID:' + accountId;
+  }
+}
+
+
+/**
+ * メッセージ本文からTO情報を抽出
+ */
+function extractToAccounts(body, token, roomId) {
+  // [To:1234567] 形式を抽出
+  const toPattern = /\[To:(\d+)\]/g;
+  const matches = [...body.matchAll(toPattern)];
+  
+  if (matches.length === 0) {
+    return '指定なし';
+  }
+  
+  // アカウントIDから名前を取得
+  const accountIds = matches.map(match => parseInt(match[1]));
+  const names = accountIds.map(id => getAccountName(token, roomId, id));
+  
+  return names.join(', ');
 }
 
 
@@ -136,128 +235,78 @@ function doPost(e) {
  * チャットワークメッセージからテンプレートデータを抽出
  */
 function parseTemplateMessage(body) {
-  // [info][title]依頼[/title] 形式からメッセージ種別を抽出
-  const typeMatch = body.match(/\[title\](.*?)\[\/title\]/);
-  if (!typeMatch) return null;
+  // [To:xxx]を除去してからパース
+  const cleanBody = body.replace(/\[To:\d+\][^\n]*/g, '').trim();
   
-  const messageType = typeMatch[1];
+  // <件名>と<目的>の抽出
+  const subjectMatch = cleanBody.match(/<件名>(.+?)(?=\n|<|$)/s);
+  const purposeMatch = cleanBody.match(/<目的>(.+?)(?=\n|\[|$)/s);
   
-  // 各項目を正規表現で抽出
-  const extractField = (fieldName) => {
-    const regex = new RegExp(`${fieldName}[::：]\\s*(.+?)(?=\\n|\\[|$)`, 's');
-    const match = body.match(regex);
-    return match ? match[1].trim() : '';
+  // どちらか一方でも欠けている場合はnullを返す
+  if (!subjectMatch || !purposeMatch) return null;
+  
+  // 全角英数字を半角に変換
+  const subject = toHalfWidth(subjectMatch[1].trim());
+  const purpose = toHalfWidth(purposeMatch[1].trim());
+  
+  // 本文の抽出（[hr]の後）
+  const bodyMatch = cleanBody.match(/\[hr\]\s*([\s\S]+)$/);
+  const bodyText = bodyMatch ? bodyMatch[1].trim() : '';
+  
+  return {
+    subject: subject,
+    purpose: purpose,
+    body: bodyText
   };
-  
-  // 共通項目の抽出（デフォルト値として「指定なし」を設定）
-  const templateData = {
-    message_type: messageType,
-    company: extractField('企業名') || '指定なし',
-    deadline: extractField('期限') || '指定なし',
-    subject: extractField('件名'),
-    importance: extractField('重要度') || '指定なし',
-    purpose: extractField('目的'),
-    body: '',
-    tags: '',
-    details: {}
-  };
+}
 
-  // 本文の抽出（3番目の[hr]と4番目の[hr]の間）
-  const hrSplit = body.split('[hr]');
-  if (hrSplit.length >= 4) {
-    // 4番目の[hr]の後（本文部分）
-    templateData.body = hrSplit[3].trim();
-  }
 
-  // タグの抽出（最後の[hr]の後、[/info]の前）
-  const tagMatch = body.match(/\[hr\]\s*#(.+?)\s*\[\/info\]/s);
-  if (tagMatch) {
-    // #Web制作, #新規事業, #見積もり依頼 → Web制作,新規事業,見積もり依頼
-    templateData.tags = tagMatch[1]
-      .split(',')
-      .map(tag => tag.replace(/#/g, '').trim())
-      .filter(tag => tag !== '')
-      .join(',');
-  }
+/**
+ * ヘッダー名からカラムインデックスを取得
+ */
+function getColumnIndex(sheet, headerName) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const index = headers.indexOf(headerName);
+  return index !== -1 ? index + 1 : null; // 1始まりで返す
+}
+
+
+/**
+ * ヘッダー名をキーとしてデータを保存
+ */
+function appendRowByHeaders(sheet, dataObj) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const rowData = headers.map(header => dataObj[header] || '');
+  sheet.appendRow(rowData);
+}
+
+
+/**
+ * ヘッダー名をキーとして既存行を更新
+ */
+function updateRowByHeaders(sheet, rowIndex, dataObj) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const rowData = headers.map(header => dataObj[header] || '');
+  sheet.getRange(rowIndex, 1, 1, headers.length).setValues([rowData]);
+}
+
+
+/**
+ * 特定カラムの値で行を検索
+ */
+function findRowByColumn(sheet, columnName, value) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const columnIndex = headers.indexOf(columnName);
   
-  // メッセージタイプ別の詳細項目を抽出
-  switch (messageType) {
-    case '依頼':
-      templateData.details = {
-        expected_response: extractField('期待する返答'),
-        background: extractField('背景/前提'),
-        constraints: extractField('制約事項/補足')
-      };
-      break;
-    
-    case '報告':
-      templateData.details = {
-        report_period: extractField('実施期間'),
-        action_taken: extractField('実施事項'),
-        result: extractField('結果/進捗'),
-        next_action: extractField('次工程の予定'),
-        issue: extractField('トラブル/課題')
-      };
-      break;
-    
-    case '相談':
-      templateData.details = {
-        current_issue: extractField('現状の課題'),
-        options_considered: extractField('検討済みの選択肢'),
-        request: extractField('求める意見/決定')
-      };
-      break;
-    
-    case '連絡':
-      templateData.details = {
-        contact_type: extractField('連絡種別'),
-        before_change: extractField('変更前の情報'),
-        action_required: extractField('対応要否'),
-        after_action: extractField('対応要の場合')
-      };
-      break;
-    
-    case '確認':
-      templateData.details = {
-        check_target: extractField('確認対象'),
-        criteria: extractField('判断基準'),
-        check_reason: extractField('依頼理由')
-      };
-      break;
-    
-    case '承認':
-      templateData.details = {
-        approval_target: extractField('承認対象'),
-        rationale: extractField('申請の根拠'),
-        impact: extractField('金額/影響'),
-        post_action: extractField('承認後の行動')
-      };
-      break;
-    
-    case '質問':
-      templateData.details = {
-        question_target: extractField('質問対象'),
-        pre_check: extractField('試したこと/確認箇所'),
-        expected_answer: extractField('期待する回答')
-      };
-      break;
-    
-    case '案内':
-      templateData.details = {
-        audience: extractField('周知対象'),
-        urgency: extractField('対応要否/緊急度')
-      };
-      break;
-    
-    case '注意':
-      templateData.details = {
-        audience: extractField('周知対象'),
-        urgency: extractField('対応要否/緊急度')
-      };
-      break;
-  }
+  if (columnIndex === -1) return null;
   
-  return templateData;
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][columnIndex] == value) {
+      return i + 1; // 行番号を返す（1始まり）
+    }
+  }
+  return null;
 }
 
 
@@ -265,7 +314,7 @@ function parseTemplateMessage(body) {
  * 全角英数字を半角に変換する
  */ 
 function toHalfWidth(str) {
-  return str.replace(/[Ā-ー]/g, function(s) {
+  return str.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
     return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
   });
 }
@@ -316,7 +365,7 @@ function getRoomList() {
     if (name.startsWith('room_')) {
       const roomId = name.replace('room_', '');
       const data = sheet.getDataRange().getValues();
-      const roomName = data.length > 1 ? data[1][1] : 'unknown';
+      const roomName = data.length > 1 ? 'Room ' + roomId : 'unknown';
       roomList.push({ roomId, roomName });
     }
   });
