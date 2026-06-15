@@ -2,12 +2,21 @@
  * チャットワークのWebhookからのPOSTリクエストを処理する
  */ 
 const V2_MAIN_HEADERS = [
-  'メッセージID', '投稿者', '宛先', '会社', '期限日', '指示', '内容', '本文', '作成日時', '更新日時'
+  'メッセージID', '投稿者', '宛先', '会社', '期限日', '指示', '内容', '本文', '作成日時', '更新日時', 'ステータス'
 ];
 
 const V2_LOG_HEADERS = [
   'ログID', 'メッセージID', '投稿者', '宛先', '会社', '期限日', '指示', '内容', '本文', '操作種別', '操作日時'
 ];
+
+const STATUS_HEADER = 'ステータス';
+const STATUS_OPTIONS = ['未着手', '進行中', '完了'];
+const DEFAULT_STATUS = '未着手';
+const STATUS_COLORS = {
+  '未着手': '#ffffff',
+  '進行中': '#fce5cd',
+  '完了': '#d9d9d9'
+};
 
 function doPost(e) {
   // ロックを取得（最大30秒待機）
@@ -53,6 +62,7 @@ function doPost(e) {
 
     ensureHeaders(sheet, V2_MAIN_HEADERS);
     ensureHeaders(logSheet, V2_LOG_HEADERS);
+    applyStatusFeatures(sheet);
 
     // 投稿者名を取得
     const fromAccount = getAccountName(CHATWORK_TOKEN, room_id, account_id);
@@ -81,7 +91,8 @@ function doPost(e) {
       '内容': parsedData.content,
       '本文': parsedData.body,
       '作成日時': send_time,
-      '更新日時': send_time
+      '更新日時': send_time,
+      'ステータス': DEFAULT_STATUS
     };
 
     // メインシートでの既存メッセージのチェック
@@ -98,6 +109,7 @@ function doPost(e) {
 
     if (companySheet) {
       ensureHeaders(companySheet, V2_MAIN_HEADERS);
+      applyStatusFeatures(companySheet);
     }
 
     if (existingRow) {
@@ -128,6 +140,7 @@ function doPost(e) {
       dataObj['更新日時'] = isChanged
         ? new Date()
         : getCellValueByHeader(sheet, existingRow, '更新日時') || send_time;
+      dataObj[STATUS_HEADER] = getDisplayValueByHeader(sheet, existingRow, STATUS_HEADER) || DEFAULT_STATUS;
 
       const companySynced = syncCompanySheet(companySheet, chatworkLink, dataObj);
       
@@ -300,6 +313,14 @@ function escapeRegExp(text) {
 function ensureHeaders(sheet, headers) {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
+    return;
+  }
+
+  // 既存シートには不足ヘッダーだけ末尾追加する
+  const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const missingHeaders = headers.filter(header => existingHeaders.indexOf(header) === -1);
+  if (missingHeaders.length > 0) {
+    sheet.getRange(1, sheet.getLastColumn() + 1, 1, missingHeaders.length).setValues([missingHeaders]);
   }
 }
 
@@ -360,6 +381,150 @@ function getDisplayValueByHeader(sheet, rowIndex, headerName) {
 
 
 /**
+ * ステータス列のプルダウンと行色ルールを適用
+ */
+function applyStatusFeatures(sheet) {
+  const statusColIndex = getColumnIndex(sheet, STATUS_HEADER);
+  if (!statusColIndex) return;
+
+  const maxRows = Math.max(sheet.getMaxRows() - 1, 1);
+  const statusRange = sheet.getRange(2, statusColIndex, maxRows, 1);
+  const validationRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(STATUS_OPTIONS, true)
+    .setAllowInvalid(false)
+    .build();
+  statusRange.setDataValidation(validationRule);
+
+  const statusColLetter = columnToLetter(statusColIndex);
+  const dataRange = sheet.getRange(2, 1, maxRows, sheet.getLastColumn());
+
+  const keepRules = sheet.getConditionalFormatRules().filter(rule => {
+    const condition = rule.getBooleanCondition();
+    if (!condition) return true;
+    if (condition.getCriteriaType() !== SpreadsheetApp.BooleanCriteria.CUSTOM_FORMULA) return true;
+    const criteriaValues = condition.getCriteriaValues();
+    const formula = criteriaValues && criteriaValues[0] ? String(criteriaValues[0]) : '';
+    return !(
+      formula === `=$${statusColLetter}2="完了"` ||
+      formula === `=$${statusColLetter}2="未着手"` ||
+      formula === `=$${statusColLetter}2="進行中"`
+    );
+  });
+
+  keepRules.push(
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="完了"`)
+      .setBackground(STATUS_COLORS['完了'])
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="未着手"`)
+      .setBackground(STATUS_COLORS['未着手'])
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="進行中"`)
+      .setBackground(STATUS_COLORS['進行中'])
+      .setRanges([dataRange])
+      .build()
+  );
+
+  sheet.setConditionalFormatRules(keepRules);
+}
+
+
+/**
+ * 編集時に room_v2 と company のステータスを同期
+ */
+function onEdit(e) {
+  try {
+    if (!e || !e.range) return;
+
+    const sheet = e.range.getSheet();
+    const sheetName = sheet.getName();
+    const editedRow = e.range.getRow();
+    const editedCol = e.range.getColumn();
+
+    if (editedRow <= 1) return;
+    if (!(sheetName.startsWith('room_v2_') || sheetName.startsWith('company_'))) return;
+
+    const statusColIndex = getColumnIndex(sheet, STATUS_HEADER);
+    if (!statusColIndex || editedCol !== statusColIndex) return;
+
+    const newStatus = e.value || '';
+    const messageId = getDisplayValueByHeader(sheet, editedRow, 'メッセージID');
+    if (!messageId) return;
+
+    const spreadsheet = sheet.getParent();
+
+    if (sheetName.startsWith('room_v2_')) {
+      const companyName = getDisplayValueByHeader(sheet, editedRow, '会社');
+      const companySheetName = getCompanySheetName(companyName);
+      if (!companySheetName) return;
+
+      const companySheet = spreadsheet.getSheetByName(companySheetName);
+      if (!companySheet) return;
+
+      syncStatusByMessageId(companySheet, messageId, newStatus);
+      return;
+    }
+
+    // company_* 側で編集された場合は room_v2_* へ同期
+    const roomId = extractRoomIdFromMessageLink(messageId);
+    if (!roomId) return;
+
+    const roomSheet = spreadsheet.getSheetByName('room_v2_' + roomId);
+    if (!roomSheet) return;
+
+    syncStatusByMessageId(roomSheet, messageId, newStatus);
+  } catch (error) {
+    Logger.log('Error in onEdit: ' + error.toString());
+  }
+}
+
+
+/**
+ * メッセージIDで行を特定し、ステータスを更新
+ */
+function syncStatusByMessageId(targetSheet, messageId, status) {
+  const rowIndex = findRowByColumn(targetSheet, 'メッセージID', messageId);
+  if (!rowIndex) return;
+
+  const statusColIndex = getColumnIndex(targetSheet, STATUS_HEADER);
+  if (!statusColIndex) return;
+
+  const currentStatus = targetSheet.getRange(rowIndex, statusColIndex).getDisplayValue();
+  if (currentStatus === status) return;
+
+  targetSheet.getRange(rowIndex, statusColIndex).setValue(status);
+}
+
+
+/**
+ * メッセージリンクから room_id を抽出
+ */
+function extractRoomIdFromMessageLink(messageLink) {
+  const match = String(messageLink || '').match(/rid(\d+)-\d+/);
+  return match ? match[1] : '';
+}
+
+
+/**
+ * カラム番号をA1形式の列文字へ変換
+ */
+function columnToLetter(columnNumber) {
+  let num = columnNumber;
+  let letter = '';
+  while (num > 0) {
+    const mod = (num - 1) % 26;
+    letter = String.fromCharCode(65 + mod) + letter;
+    num = Math.floor((num - mod) / 26);
+  }
+  return letter;
+}
+
+
+/**
  * ヘッダー名からカラムインデックスを取得
  */
 function getColumnIndex(sheet, headerName) {
@@ -380,12 +545,15 @@ function appendRowByHeaders(sheet, dataObj) {
 
 
 /**
- * ヘッダー名をキーとして既存行を更新
+ * ヘッダー名をキーとして既存行を更新（dataObj にないキーの列は触らない）
  */
 function updateRowByHeaders(sheet, rowIndex, dataObj) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const rowData = headers.map(header => dataObj[header] || '');
-  sheet.getRange(rowIndex, 1, 1, headers.length).setValues([rowData]);
+  headers.forEach((header, i) => {
+    if (header in dataObj) {
+      sheet.getRange(rowIndex, i + 1).setValue(dataObj[header]);
+    }
+  });
 }
 
 
