@@ -18,6 +18,11 @@ const STATUS_COLORS = {
   '完了': '#d9d9d9'
 };
 
+const ROOM_SHEET_PREFIX = 'room_';
+const LOG_ROOM_SHEET_PREFIX = 'log_room_';
+const LEGACY_ROOM_SHEET_PREFIX = 'room_v2_';
+const LEGACY_LOG_ROOM_SHEET_PREFIX = 'log_room_v2_';
+
 function doPost(e) {
   // ロックを取得（最大30秒待機）
   const lock = LockService.getScriptLock();
@@ -47,18 +52,18 @@ function doPost(e) {
     
     const scriptProperties = PropertiesService.getScriptProperties();
     const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
-    const SHEET_NAME = 'room_v2_' + room_id;
-    const LOG_SHEET_NAME = 'log_room_v2_' + room_id;
+    const SHEET_NAME = ROOM_SHEET_PREFIX + room_id;
+    const LOG_SHEET_NAME = LOG_ROOM_SHEET_PREFIX + room_id;
+    const LEGACY_SHEET_NAME = LEGACY_ROOM_SHEET_PREFIX + room_id;
+    const LEGACY_LOG_SHEET_NAME = LEGACY_LOG_ROOM_SHEET_PREFIX + room_id;
 
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     
     // メインシート（編集可能）
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME)
-      || spreadsheet.insertSheet(SHEET_NAME);
+    const sheet = getOrCreateSheetWithLegacyName(spreadsheet, SHEET_NAME, LEGACY_SHEET_NAME);
 
     // ログシート（編集履歴保存用）
-    const logSheet = spreadsheet.getSheetByName(LOG_SHEET_NAME)
-      || spreadsheet.insertSheet(LOG_SHEET_NAME);
+    const logSheet = getOrCreateSheetWithLegacyName(spreadsheet, LOG_SHEET_NAME, LEGACY_LOG_SHEET_NAME);
 
     ensureHeaders(sheet, V2_MAIN_HEADERS);
     ensureHeaders(logSheet, V2_LOG_HEADERS);
@@ -434,6 +439,47 @@ function applyStatusFeatures(sheet) {
 
 
 /**
+ * 新しいシート名を優先し、旧シート名があればリネームして再利用
+ */
+function getOrCreateSheetWithLegacyName(spreadsheet, newName, legacyName) {
+  const currentSheet = spreadsheet.getSheetByName(newName);
+  if (currentSheet) return currentSheet;
+
+  const legacySheet = spreadsheet.getSheetByName(legacyName);
+  if (legacySheet) {
+    legacySheet.setName(newName);
+    return legacySheet;
+  }
+
+  return spreadsheet.insertSheet(newName);
+}
+
+
+/**
+ * room_id から room シート（新旧プレフィックス対応）を取得
+ */
+function findRoomSheetById(spreadsheet, roomId) {
+  return spreadsheet.getSheetByName(ROOM_SHEET_PREFIX + roomId)
+    || spreadsheet.getSheetByName(LEGACY_ROOM_SHEET_PREFIX + roomId)
+    || null;
+}
+
+
+/**
+ * シート名から room_id を取得（新旧プレフィックス対応）
+ */
+function getRoomIdFromSheetName(sheetName) {
+  if (sheetName.startsWith(LEGACY_ROOM_SHEET_PREFIX)) {
+    return sheetName.slice(LEGACY_ROOM_SHEET_PREFIX.length);
+  }
+  if (sheetName.startsWith(ROOM_SHEET_PREFIX)) {
+    return sheetName.slice(ROOM_SHEET_PREFIX.length);
+  }
+  return '';
+}
+
+
+/**
  * 編集時に room_v2 と company のステータスを同期
  */
 function onEdit(e) {
@@ -446,7 +492,9 @@ function onEdit(e) {
     const editedCol = e.range.getColumn();
 
     if (editedRow <= 1) return;
-    if (!(sheetName.startsWith('room_v2_') || sheetName.startsWith('company_'))) return;
+    const isRoomSheet = sheetName.startsWith(ROOM_SHEET_PREFIX)
+      || sheetName.startsWith(LEGACY_ROOM_SHEET_PREFIX);
+    if (!(isRoomSheet || sheetName.startsWith('company_'))) return;
 
     const statusColIndex = getColumnIndex(sheet, STATUS_HEADER);
     if (!statusColIndex || editedCol !== statusColIndex) return;
@@ -457,7 +505,7 @@ function onEdit(e) {
 
     const spreadsheet = sheet.getParent();
 
-    if (sheetName.startsWith('room_v2_')) {
+    if (isRoomSheet) {
       const companyName = getDisplayValueByHeader(sheet, editedRow, '会社');
       const companySheetName = getCompanySheetName(companyName);
       if (!companySheetName) return;
@@ -469,11 +517,11 @@ function onEdit(e) {
       return;
     }
 
-    // company_* 側で編集された場合は room_v2_* へ同期
+    // company_* 側で編集された場合は room_* へ同期
     const roomId = extractRoomIdFromMessageLink(messageId);
     if (!roomId) return;
 
-    const roomSheet = spreadsheet.getSheetByName('room_v2_' + roomId);
+    const roomSheet = findRoomSheetById(spreadsheet, roomId);
     if (!roomSheet) return;
 
     syncStatusByMessageId(roomSheet, messageId, newStatus);
@@ -598,8 +646,7 @@ function doGet(e) {
  * 指定されたルームIDのメッセージをシートから取得して返す
  */
 function getRoomMessages(roomId) {
-  const sheetName = 'room_v2_' + roomId;
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const sheet = findRoomSheetById(SpreadsheetApp.getActiveSpreadsheet(), roomId);
   
   if (!sheet) {
     return [];
@@ -625,15 +672,17 @@ function getRoomMessages(roomId) {
 function getRoomList() {
   const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
   const roomList = [];
+  const seenRoomIds = {};
   
   sheets.forEach(sheet => {
     const name = sheet.getName();
-    if (name.startsWith('room_v2_')) {
-      const roomId = name.replace('room_v2_', '');
-      const data = sheet.getDataRange().getValues();
-      const roomName = data.length > 1 ? 'Room ' + roomId : 'unknown';
-      roomList.push({ roomId, roomName });
-    }
+    const roomId = getRoomIdFromSheetName(name);
+    if (!roomId || seenRoomIds[roomId]) return;
+
+    seenRoomIds[roomId] = true;
+    const data = sheet.getDataRange().getValues();
+    const roomName = data.length > 1 ? 'Room ' + roomId : 'unknown';
+    roomList.push({ roomId, roomName });
   });
   
   return roomList;
