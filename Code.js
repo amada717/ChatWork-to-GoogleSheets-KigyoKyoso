@@ -238,9 +238,9 @@ function parseTemplateMessage(body) {
   // [To:xxx]を除去してからパース
   const cleanBody = body.replace(/\[To:\d+\][^\n]*/g, '').trim();
   
-  // <件名>と<目的>の抽出
-  const subjectMatch = cleanBody.match(/<件名>(.+?)(?=\n|<|$)/s);
-  const purposeMatch = cleanBody.match(/<目的>(.+?)(?=\n|\[|$)/s);
+  // #件名#と#目的#の抽出
+  const subjectMatch = cleanBody.match(/#件名#(.+?)(?=\n|<|$)/s);
+  const purposeMatch = cleanBody.match(/#目的#(.+?)(?=\n|\[|$)/s);
   
   // どちらか一方でも欠けている場合はnullを返す
   if (!subjectMatch || !purposeMatch) return null;
