@@ -318,15 +318,20 @@ function escapeRegExp(text) {
 function ensureHeaders(sheet, headers) {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(headers);
-    return;
+  } else {
+    // 既存シートには不足ヘッダーだけ末尾追加する
+    const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const missingHeaders = headers.filter(header => existingHeaders.indexOf(header) === -1);
+    if (missingHeaders.length > 0) {
+      sheet.getRange(1, sheet.getLastColumn() + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+    }
   }
 
-  // 既存シートには不足ヘッダーだけ末尾追加する
-  const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const missingHeaders = headers.filter(header => existingHeaders.indexOf(header) === -1);
-  if (missingHeaders.length > 0) {
-    sheet.getRange(1, sheet.getLastColumn() + 1, 1, missingHeaders.length).setValues([missingHeaders]);
-  }
+  const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+  headerRange.setBackground('#000000');
+  headerRange.setFontColor('#ffffff');
+  headerRange.setFontWeight('bold');
+  sheet.setFrozenRows(1);
 }
 
 
