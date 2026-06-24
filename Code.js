@@ -67,6 +67,7 @@ function doPost(e) {
 
     ensureHeaders(sheet, V2_MAIN_HEADERS);
     ensureHeaders(logSheet, V2_LOG_HEADERS);
+    protectSheetOwnerOnly(logSheet);
     applyStatusFeatures(sheet);
 
     // 投稿者名を取得
@@ -367,6 +368,28 @@ function syncCompanySheet(companySheet, messageId, dataObj) {
 
   appendRowByHeaders(companySheet, dataObj);
   return true;
+}
+
+
+/**
+ * シートをオーナーのみ編集可にする
+ */
+function protectSheetOwnerOnly(sheet) {
+  const protections = sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);
+  const protection = protections.length > 0 ? protections[0] : sheet.protect();
+
+  protection.setWarningOnly(false);
+
+  const editors = protection.getEditors();
+  if (editors.length > 0) {
+    protection.removeEditors(editors);
+  }
+
+  if (protection.canDomainEdit()) {
+    protection.setDomainEdit(false);
+  }
+
+  return protection;
 }
 
 
