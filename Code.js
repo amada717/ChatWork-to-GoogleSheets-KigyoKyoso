@@ -1,6 +1,28 @@
 /**
  * チャットワークのWebhookからのPOSTリクエストを処理する
  */ 
+const V2_MAIN_HEADERS = [
+  'メッセージID', '投稿者', '宛先', '担当者', '会社', '期限日', '指示', '内容', '本文', '作成日時', '更新日時', 'ステータス'
+];
+
+const V2_LOG_HEADERS = [
+  'ログID', 'メッセージID', '投稿者', '宛先', '担当者', '会社', '期限日', '指示', '内容', '本文', '操作種別', '操作日時'
+];
+
+const STATUS_HEADER = 'ステータス';
+const STATUS_OPTIONS = ['未着手', '進行中', '完了'];
+const DEFAULT_STATUS = '未着手';
+const STATUS_COLORS = {
+  '未着手': '#ffffff',
+  '進行中': '#fce5cd',
+  '完了': '#d9d9d9'
+};
+
+const ROOM_SHEET_PREFIX = 'room_';
+const LOG_ROOM_SHEET_PREFIX = 'log_room_';
+const LEGACY_ROOM_SHEET_PREFIX = 'room_v2_';
+const LEGACY_LOG_ROOM_SHEET_PREFIX = 'log_room_v2_';
+
 function doPost(e) {
   // ロックを取得（最大30秒待機）
   const lock = LockService.getScriptLock();
@@ -30,32 +52,23 @@ function doPost(e) {
     
     const scriptProperties = PropertiesService.getScriptProperties();
     const CHATWORK_TOKEN = scriptProperties.getProperty('CHATWORK_TOKEN');
-    const SHEET_NAME = 'room_' + room_id;
-    const LOG_SHEET_NAME = 'log_room_' + room_id;
+    const SHEET_NAME = ROOM_SHEET_PREFIX + room_id;
+    const LOG_SHEET_NAME = LOG_ROOM_SHEET_PREFIX + room_id;
+    const LEGACY_SHEET_NAME = LEGACY_ROOM_SHEET_PREFIX + room_id;
+    const LEGACY_LOG_SHEET_NAME = LEGACY_LOG_ROOM_SHEET_PREFIX + room_id;
 
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     
     // メインシート（編集可能）
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME)
-      || spreadsheet.insertSheet(SHEET_NAME);
+    const sheet = getOrCreateSheetWithLegacyName(spreadsheet, SHEET_NAME, LEGACY_SHEET_NAME);
 
     // ログシート（編集履歴保存用）
-    const logSheet = spreadsheet.getSheetByName(LOG_SHEET_NAME)
-      || spreadsheet.insertSheet(LOG_SHEET_NAME);
+    const logSheet = getOrCreateSheetWithLegacyName(spreadsheet, LOG_SHEET_NAME, LEGACY_LOG_SHEET_NAME);
 
-    // メインシートのヘッダー作成（初回のみ）
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'created_at', 'updated_at'
-      ]);
-    }
-
-    // ログシートのヘッダー作成（初回のみ）
-    if (logSheet.getLastRow() === 0) {
-      logSheet.appendRow([
-        'log_id', 'message_id', 'from_account', 'to_accounts', 'subject', 'purpose', 'body', 'action_type', 'action_at'
-      ]);
-    }
+    ensureHeaders(sheet, V2_MAIN_HEADERS);
+    ensureHeaders(logSheet, V2_LOG_HEADERS);
+    protectSheetOwnerOnly(logSheet);
+    applyStatusFeatures(sheet);
 
     // 投稿者名を取得
     const fromAccount = getAccountName(CHATWORK_TOKEN, room_id, account_id);
@@ -63,14 +76,8 @@ function doPost(e) {
     // 宛先を抽出
     const toAccounts = extractToAccounts(body, CHATWORK_TOKEN, room_id);
 
-    // テンプレートデータをパース
-    const templateData = parseTemplateMessage(body);
-
-    // テンプレート形式でない場合はスキップ
-    if (!templateData) {
-      Logger.log('Not a template message - skipping');
-      return ContentService.createTextOutput('not a template message');
-    }
+    // メッセージデータをパース
+    const parsedData = parseTemplateMessage(body);
 
     // 送信日時
     const send_time = data.webhook_event.send_time
@@ -80,34 +87,106 @@ function doPost(e) {
     // ChatworkリンクURL生成
     const chatworkLink = `https://www.chatwork.com/#!rid${room_id}-${message_id}`;
 
-    // メインシートでの既存メッセージのチェック
-    const existingRow = findRowByColumn(sheet, 'message_id', chatworkLink);
-
     // ログID生成（タイムスタンプ + message_id）
     const log_id = new Date().getTime() + '_' + message_id;
 
-   if (existingRow) {
+    // タグが一つも含まれていない場合はログシートのみに記録し、メインシートへは保存しない
+    const hasAnyTag = [
+      parsedData.company,
+      parsedData.personInCharge,
+      parsedData.dueDate,
+      parsedData.instruction,
+      parsedData.content
+    ].some(value => value);
+
+    if (!hasAnyTag) {
+      Logger.log('No tags found - logging only');
+      appendRowByHeaders(logSheet, {
+        'ログID': log_id,
+        'メッセージID': chatworkLink,
+        '投稿者': fromAccount,
+        '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
+        '会社': parsedData.company,
+        '期限日': parsedData.dueDate,
+        '指示': parsedData.instruction,
+        '内容': parsedData.content,
+        '本文': parsedData.body,
+        '操作種別': 'no_tag',
+        '操作日時': send_time
+      });
+      return ContentService.createTextOutput('no tags - logged only');
+    }
+
+    const dataObj = {
+      'メッセージID': chatworkLink,
+      '投稿者': fromAccount,
+      '宛先': toAccounts,
+      '担当者': parsedData.personInCharge,
+      '会社': parsedData.company,
+      '期限日': parsedData.dueDate,
+      '指示': parsedData.instruction,
+      '内容': parsedData.content,
+      '本文': parsedData.body,
+      '作成日時': send_time,
+      '更新日時': send_time,
+      'ステータス': DEFAULT_STATUS
+    };
+
+    // メインシートでの既存メッセージのチェック
+    const existingRow = findRowByColumn(sheet, 'メッセージID', chatworkLink);
+
+    // 会社シートは #会社# が空でない場合のみ作成
+    const companySheetName = getCompanySheetName(parsedData.company);
+    const companySheet = companySheetName
+      ? (spreadsheet.getSheetByName(companySheetName) || spreadsheet.insertSheet(companySheetName))
+      : null;
+
+    if (companySheet) {
+      ensureHeaders(companySheet, V2_MAIN_HEADERS);
+      applyStatusFeatures(companySheet);
+    }
+
+    if (existingRow) {
       // 既存の場合: 内容変更チェック
       Logger.log('Message exists - checking for changes');
       
       // 既存データを取得
-      const existingFromAccount = sheet.getRange(existingRow, getColumnIndex(sheet, 'from_account')).getValue();
-      const existingToAccounts = sheet.getRange(existingRow, getColumnIndex(sheet, 'to_accounts')).getValue();
-      const existingSubject = sheet.getRange(existingRow, getColumnIndex(sheet, 'subject')).getValue();
-      const existingPurpose = sheet.getRange(existingRow, getColumnIndex(sheet, 'purpose')).getValue();
-      const existingBody = sheet.getRange(existingRow, getColumnIndex(sheet, 'body')).getValue();
+      const existingFromAccount = getDisplayValueByHeader(sheet, existingRow, '投稿者');
+      const existingToAccounts = getDisplayValueByHeader(sheet, existingRow, '宛先');
+      const existingPersonInCharge = getDisplayValueByHeader(sheet, existingRow, '担当者');
+      const existingCompany = getDisplayValueByHeader(sheet, existingRow, '会社');
+      const existingDueDate = getDisplayValueByHeader(sheet, existingRow, '期限日');
+      const existingInstruction = getDisplayValueByHeader(sheet, existingRow, '指示');
+      const existingContent = getDisplayValueByHeader(sheet, existingRow, '内容');
+      const existingBody = getDisplayValueByHeader(sheet, existingRow, '本文');
       
       // 内容が変更されているかチェック
       const isChanged = (
         existingFromAccount !== fromAccount ||
         existingToAccounts !== toAccounts ||
-        existingSubject !== templateData.subject ||
-        existingPurpose !== templateData.purpose ||
-        existingBody !== templateData.body
+        existingPersonInCharge !== parsedData.personInCharge ||
+        existingCompany !== parsedData.company ||
+        existingDueDate !== parsedData.dueDate ||
+        existingInstruction !== parsedData.instruction ||
+        existingContent !== parsedData.content ||
+        existingBody !== parsedData.body
       );
+
+      dataObj['作成日時'] = getCellValueByHeader(sheet, existingRow, '作成日時') || send_time;
+      dataObj['更新日時'] = isChanged
+        ? new Date()
+        : getCellValueByHeader(sheet, existingRow, '更新日時') || send_time;
+      dataObj[STATUS_HEADER] = getDisplayValueByHeader(sheet, existingRow, STATUS_HEADER) || DEFAULT_STATUS;
+
+      const companySynced = syncCompanySheet(companySheet, chatworkLink, dataObj);
       
       if (!isChanged) {
         // 内容が同じ場合はスキップ（Chatworkの重複Webhook対策）
+        if (companySynced) {
+          Logger.log('No main changes, but company sheet synced');
+          return ContentService.createTextOutput('company synced');
+        }
         Logger.log('No changes detected - skipping duplicate webhook');
         return ContentService.createTextOutput('no changes');
       }
@@ -115,61 +194,48 @@ function doPost(e) {
       // 内容が変更されている場合は更新
       Logger.log('Changes detected - updating row: ' + existingRow);
       
-      const dataObj = {
-        'message_id': chatworkLink,
-        'from_account': fromAccount,
-        'to_accounts': toAccounts,
-        'subject': templateData.subject,
-        'purpose': templateData.purpose,
-        'body': templateData.body,
-        'created_at': sheet.getRange(existingRow, getColumnIndex(sheet, 'created_at')).getValue(),
-        'updated_at': new Date()
-      };
-      
       updateRowByHeaders(sheet, existingRow, dataObj);
+
+      syncCompanySheet(companySheet, chatworkLink, dataObj);
 
       // ログシートに更新履歴を追加
       const logDataObj = {
-        'log_id': log_id,
-        'message_id': chatworkLink,
-        'from_account': fromAccount,
-        'to_accounts': toAccounts,
-        'subject': templateData.subject,
-        'purpose': templateData.purpose,
-        'body': templateData.body,
-        'action_type': 'updated',
-        'action_at': new Date()
+        'ログID': log_id,
+        'メッセージID': chatworkLink,
+        '投稿者': fromAccount,
+        '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
+        '会社': parsedData.company,
+        '期限日': parsedData.dueDate,
+        '指示': parsedData.instruction,
+        '内容': parsedData.content,
+        '本文': parsedData.body,
+        '操作種別': 'updated',
+        '操作日時': new Date()
       };
       
       appendRowByHeaders(logSheet, logDataObj);
     } else {
       // 新規の場合は追加
       Logger.log('New message - appending row');
-      
-      const dataObj = {
-        'message_id': chatworkLink,
-        'from_account': fromAccount,
-        'to_accounts': toAccounts,
-        'subject': templateData.subject,
-        'purpose': templateData.purpose,
-        'body': templateData.body,
-        'created_at': send_time,
-        'updated_at': send_time
-      };
-      
+
       appendRowByHeaders(sheet, dataObj);
+      syncCompanySheet(companySheet, chatworkLink, dataObj);
 
       // ログシートに新規作成履歴を追加
       const logDataObj = {
-        'log_id': log_id,
-        'message_id': chatworkLink,
-        'from_account': fromAccount,
-        'to_accounts': toAccounts,
-        'subject': templateData.subject,
-        'purpose': templateData.purpose,
-        'body': templateData.body,
-        'action_type': 'created',
-        'action_at': send_time
+        'ログID': log_id,
+        'メッセージID': chatworkLink,
+        '投稿者': fromAccount,
+        '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
+        '会社': parsedData.company,
+        '期限日': parsedData.dueDate,
+        '指示': parsedData.instruction,
+        '内容': parsedData.content,
+        '本文': parsedData.body,
+        '操作種別': 'created',
+        '操作日時': send_time
       };
       
       appendRowByHeaders(logSheet, logDataObj);
@@ -237,27 +303,334 @@ function extractToAccounts(body, token, roomId) {
 function parseTemplateMessage(body) {
   // [To:xxx]を除去してからパース
   const cleanBody = body.replace(/\[To:\d+\][^\n]*/g, '').trim();
-  
-  // <件名>と<目的>の抽出
-  const subjectMatch = cleanBody.match(/<件名>(.+?)(?=\n|<|$)/s);
-  const purposeMatch = cleanBody.match(/<目的>(.+?)(?=\n|\[|$)/s);
-  
-  // どちらか一方でも欠けている場合はnullを返す
-  if (!subjectMatch || !purposeMatch) return null;
-  
-  // 全角英数字を半角に変換
-  const subject = toHalfWidth(subjectMatch[1].trim());
-  const purpose = toHalfWidth(purposeMatch[1].trim());
-  
-  // 本文の抽出（[hr]の後）
-  const bodyMatch = cleanBody.match(/\[hr\]\s*([\s\S]+)$/);
-  const bodyText = bodyMatch ? bodyMatch[1].trim() : '';
+  const separatorIndex = cleanBody.indexOf('###');
+  const metadataPart = separatorIndex === -1
+    ? cleanBody
+    : cleanBody.slice(0, separatorIndex);
+  const bodyText = separatorIndex === -1
+    ? ''
+    : cleanBody.slice(separatorIndex + 3).replace(/^\r?\n/, '');
   
   return {
-    subject: subject,
-    purpose: purpose,
+    company: extractTagValues(metadataPart, '会社'),
+    personInCharge: extractTagValues(metadataPart, '担当者'),
+    dueDate: extractTagValues(metadataPart, '期限日'),
+    instruction: extractTagValues(metadataPart, '指示'),
+    content: extractTagValues(metadataPart, '内容'),
     body: bodyText
   };
+}
+
+
+/**
+ * タグ値を抽出（同一タグが複数あれば改行連結）
+ */
+function extractTagValues(text, tagName) {
+  const regex = new RegExp(`#${escapeRegExp(tagName)}#([^\n]*)`, 'g');
+  const values = [];
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    const value = match[1].trim();
+    if (value) values.push(value);
+  }
+
+  return values.join('\n');
+}
+
+
+/**
+ * 正規表現エスケープ
+ */
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+
+/**
+ * ヘッダーを初回作成
+ */
+function ensureHeaders(sheet, headers) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  } else {
+    // 既存シートには不足ヘッダーだけ末尾追加する
+    const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const missingHeaders = headers.filter(header => existingHeaders.indexOf(header) === -1);
+    if (missingHeaders.length > 0) {
+      sheet.getRange(1, sheet.getLastColumn() + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+    }
+  }
+
+  const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+  headerRange.setBackground('#000000');
+  headerRange.setFontColor('#ffffff');
+  headerRange.setFontWeight('bold');
+  sheet.setFrozenRows(1);
+}
+
+
+/**
+ * 会社シート名を生成（禁止文字置換、最大50文字）
+ */
+function getCompanySheetName(companyName) {
+  const normalized = (companyName || '').trim();
+  if (!normalized) return '';
+
+  const safeName = normalized
+    .replace(/[\\\/\?\*\[\]:]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!safeName) return '';
+
+  return (`company_${safeName}`).slice(0, 50);
+}
+
+
+/**
+ * 会社シートへ同期（存在時のみ）
+ */
+function syncCompanySheet(companySheet, messageId, dataObj) {
+  if (!companySheet) return false;
+
+  const existingRow = findRowByColumn(companySheet, 'メッセージID', messageId);
+  if (existingRow) {
+    updateRowByHeaders(companySheet, existingRow, dataObj);
+    return false;
+  }
+
+  appendRowByHeaders(companySheet, dataObj);
+  return true;
+}
+
+
+/**
+ * シートをオーナーのみ編集可にする
+ */
+function protectSheetOwnerOnly(sheet) {
+  const protections = sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);
+  const protection = protections.length > 0 ? protections[0] : sheet.protect();
+
+  protection.setWarningOnly(false);
+
+  const editors = protection.getEditors();
+  if (editors.length > 0) {
+    protection.removeEditors(editors);
+  }
+
+  if (protection.canDomainEdit()) {
+    protection.setDomainEdit(false);
+  }
+
+  return protection;
+}
+
+
+/**
+ * ヘッダー名でセル値を取得（ヘッダー不存在なら空文字）
+ */
+function getCellValueByHeader(sheet, rowIndex, headerName) {
+  const columnIndex = getColumnIndex(sheet, headerName);
+  if (!columnIndex) return '';
+  return sheet.getRange(rowIndex, columnIndex).getValue();
+}
+
+
+/**
+ * ヘッダー名で表示文字列を取得（比較用）
+ */
+function getDisplayValueByHeader(sheet, rowIndex, headerName) {
+  const columnIndex = getColumnIndex(sheet, headerName);
+  if (!columnIndex) return '';
+  return sheet.getRange(rowIndex, columnIndex).getDisplayValue();
+}
+
+
+/**
+ * ステータス列のプルダウンと行色ルールを適用
+ */
+function applyStatusFeatures(sheet) {
+  const statusColIndex = getColumnIndex(sheet, STATUS_HEADER);
+  if (!statusColIndex) return;
+
+  const maxRows = Math.max(sheet.getMaxRows() - 1, 1);
+  const statusRange = sheet.getRange(2, statusColIndex, maxRows, 1);
+  const validationRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(STATUS_OPTIONS, true)
+    .setAllowInvalid(false)
+    .build();
+  statusRange.setDataValidation(validationRule);
+
+  const statusColLetter = columnToLetter(statusColIndex);
+  const dataRange = sheet.getRange(2, 1, maxRows, sheet.getLastColumn());
+
+  const keepRules = sheet.getConditionalFormatRules().filter(rule => {
+    const condition = rule.getBooleanCondition();
+    if (!condition) return true;
+    if (condition.getCriteriaType() !== SpreadsheetApp.BooleanCriteria.CUSTOM_FORMULA) return true;
+    const criteriaValues = condition.getCriteriaValues();
+    const formula = criteriaValues && criteriaValues[0] ? String(criteriaValues[0]) : '';
+    return !(
+      formula === `=$${statusColLetter}2="完了"` ||
+      formula === `=$${statusColLetter}2="未着手"` ||
+      formula === `=$${statusColLetter}2="進行中"`
+    );
+  });
+
+  keepRules.push(
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="完了"`)
+      .setBackground(STATUS_COLORS['完了'])
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="未着手"`)
+      .setBackground(STATUS_COLORS['未着手'])
+      .setRanges([dataRange])
+      .build(),
+    SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied(`=$${statusColLetter}2="進行中"`)
+      .setBackground(STATUS_COLORS['進行中'])
+      .setRanges([dataRange])
+      .build()
+  );
+
+  sheet.setConditionalFormatRules(keepRules);
+}
+
+
+/**
+ * 新しいシート名を優先し、旧シート名があればリネームして再利用
+ */
+function getOrCreateSheetWithLegacyName(spreadsheet, newName, legacyName) {
+  const currentSheet = spreadsheet.getSheetByName(newName);
+  if (currentSheet) return currentSheet;
+
+  const legacySheet = spreadsheet.getSheetByName(legacyName);
+  if (legacySheet) {
+    legacySheet.setName(newName);
+    return legacySheet;
+  }
+
+  return spreadsheet.insertSheet(newName);
+}
+
+
+/**
+ * room_id から room シート（新旧プレフィックス対応）を取得
+ */
+function findRoomSheetById(spreadsheet, roomId) {
+  return spreadsheet.getSheetByName(ROOM_SHEET_PREFIX + roomId)
+    || spreadsheet.getSheetByName(LEGACY_ROOM_SHEET_PREFIX + roomId)
+    || null;
+}
+
+
+/**
+ * シート名から room_id を取得（新旧プレフィックス対応）
+ */
+function getRoomIdFromSheetName(sheetName) {
+  if (sheetName.startsWith(LEGACY_ROOM_SHEET_PREFIX)) {
+    return sheetName.slice(LEGACY_ROOM_SHEET_PREFIX.length);
+  }
+  if (sheetName.startsWith(ROOM_SHEET_PREFIX)) {
+    return sheetName.slice(ROOM_SHEET_PREFIX.length);
+  }
+  return '';
+}
+
+
+/**
+ * 編集時に room_v2 と company のステータスを同期
+ */
+function onEdit(e) {
+  try {
+    if (!e || !e.range) return;
+
+    const sheet = e.range.getSheet();
+    const sheetName = sheet.getName();
+    const editedRow = e.range.getRow();
+    const editedCol = e.range.getColumn();
+
+    if (editedRow <= 1) return;
+    const isRoomSheet = sheetName.startsWith(ROOM_SHEET_PREFIX)
+      || sheetName.startsWith(LEGACY_ROOM_SHEET_PREFIX);
+    if (!(isRoomSheet || sheetName.startsWith('company_'))) return;
+
+    const statusColIndex = getColumnIndex(sheet, STATUS_HEADER);
+    if (!statusColIndex || editedCol !== statusColIndex) return;
+
+    const newStatus = e.value || '';
+    const messageId = getDisplayValueByHeader(sheet, editedRow, 'メッセージID');
+    if (!messageId) return;
+
+    const spreadsheet = sheet.getParent();
+
+    if (isRoomSheet) {
+      const companyName = getDisplayValueByHeader(sheet, editedRow, '会社');
+      const companySheetName = getCompanySheetName(companyName);
+      if (!companySheetName) return;
+
+      const companySheet = spreadsheet.getSheetByName(companySheetName);
+      if (!companySheet) return;
+
+      syncStatusByMessageId(companySheet, messageId, newStatus);
+      return;
+    }
+
+    // company_* 側で編集された場合は room_* へ同期
+    const roomId = extractRoomIdFromMessageLink(messageId);
+    if (!roomId) return;
+
+    const roomSheet = findRoomSheetById(spreadsheet, roomId);
+    if (!roomSheet) return;
+
+    syncStatusByMessageId(roomSheet, messageId, newStatus);
+  } catch (error) {
+    Logger.log('Error in onEdit: ' + error.toString());
+  }
+}
+
+
+/**
+ * メッセージIDで行を特定し、ステータスを更新
+ */
+function syncStatusByMessageId(targetSheet, messageId, status) {
+  const rowIndex = findRowByColumn(targetSheet, 'メッセージID', messageId);
+  if (!rowIndex) return;
+
+  const statusColIndex = getColumnIndex(targetSheet, STATUS_HEADER);
+  if (!statusColIndex) return;
+
+  const currentStatus = targetSheet.getRange(rowIndex, statusColIndex).getDisplayValue();
+  if (currentStatus === status) return;
+
+  targetSheet.getRange(rowIndex, statusColIndex).setValue(status);
+}
+
+
+/**
+ * メッセージリンクから room_id を抽出
+ */
+function extractRoomIdFromMessageLink(messageLink) {
+  const match = String(messageLink || '').match(/rid(\d+)-\d+/);
+  return match ? match[1] : '';
+}
+
+
+/**
+ * カラム番号をA1形式の列文字へ変換
+ */
+function columnToLetter(columnNumber) {
+  let num = columnNumber;
+  let letter = '';
+  while (num > 0) {
+    const mod = (num - 1) % 26;
+    letter = String.fromCharCode(65 + mod) + letter;
+    num = Math.floor((num - mod) / 26);
+  }
+  return letter;
 }
 
 
@@ -282,12 +655,15 @@ function appendRowByHeaders(sheet, dataObj) {
 
 
 /**
- * ヘッダー名をキーとして既存行を更新
+ * ヘッダー名をキーとして既存行を更新（dataObj にないキーの列は触らない）
  */
 function updateRowByHeaders(sheet, rowIndex, dataObj) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const rowData = headers.map(header => dataObj[header] || '');
-  sheet.getRange(rowIndex, 1, 1, headers.length).setValues([rowData]);
+  headers.forEach((header, i) => {
+    if (header in dataObj) {
+      sheet.getRange(rowIndex, i + 1).setValue(dataObj[header]);
+    }
+  });
 }
 
 
@@ -332,8 +708,7 @@ function doGet(e) {
  * 指定されたルームIDのメッセージをシートから取得して返す
  */
 function getRoomMessages(roomId) {
-  const sheetName = 'room_' + roomId;
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const sheet = findRoomSheetById(SpreadsheetApp.getActiveSpreadsheet(), roomId);
   
   if (!sheet) {
     return [];
@@ -359,15 +734,17 @@ function getRoomMessages(roomId) {
 function getRoomList() {
   const sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
   const roomList = [];
+  const seenRoomIds = {};
   
   sheets.forEach(sheet => {
     const name = sheet.getName();
-    if (name.startsWith('room_')) {
-      const roomId = name.replace('room_', '');
-      const data = sheet.getDataRange().getValues();
-      const roomName = data.length > 1 ? 'Room ' + roomId : 'unknown';
-      roomList.push({ roomId, roomName });
-    }
+    const roomId = getRoomIdFromSheetName(name);
+    if (!roomId || seenRoomIds[roomId]) return;
+
+    seenRoomIds[roomId] = true;
+    const data = sheet.getDataRange().getValues();
+    const roomName = data.length > 1 ? 'Room ' + roomId : 'unknown';
+    roomList.push({ roomId, roomName });
   });
   
   return roomList;
