@@ -2,11 +2,11 @@
  * チャットワークのWebhookからのPOSTリクエストを処理する
  */ 
 const V2_MAIN_HEADERS = [
-  'メッセージID', '投稿者', '宛先', '会社', '期限日', '指示', '内容', '本文', '作成日時', '更新日時', 'ステータス'
+  'メッセージID', '投稿者', '宛先', '担当者', '会社', '期限日', '指示', '内容', '本文', '作成日時', '更新日時', 'ステータス'
 ];
 
 const V2_LOG_HEADERS = [
-  'ログID', 'メッセージID', '投稿者', '宛先', '会社', '期限日', '指示', '内容', '本文', '操作種別', '操作日時'
+  'ログID', 'メッセージID', '投稿者', '宛先', '担当者', '会社', '期限日', '指示', '内容', '本文', '操作種別', '操作日時'
 ];
 
 const STATUS_HEADER = 'ステータス';
@@ -91,6 +91,7 @@ function doPost(e) {
       'メッセージID': chatworkLink,
       '投稿者': fromAccount,
       '宛先': toAccounts,
+      '担当者': parsedData.personInCharge,
       '会社': parsedData.company,
       '期限日': parsedData.dueDate,
       '指示': parsedData.instruction,
@@ -125,6 +126,7 @@ function doPost(e) {
       // 既存データを取得
       const existingFromAccount = getDisplayValueByHeader(sheet, existingRow, '投稿者');
       const existingToAccounts = getDisplayValueByHeader(sheet, existingRow, '宛先');
+      const existingPersonInCharge = getDisplayValueByHeader(sheet, existingRow, '担当者');
       const existingCompany = getDisplayValueByHeader(sheet, existingRow, '会社');
       const existingDueDate = getDisplayValueByHeader(sheet, existingRow, '期限日');
       const existingInstruction = getDisplayValueByHeader(sheet, existingRow, '指示');
@@ -135,6 +137,7 @@ function doPost(e) {
       const isChanged = (
         existingFromAccount !== fromAccount ||
         existingToAccounts !== toAccounts ||
+        existingPersonInCharge !== parsedData.personInCharge ||
         existingCompany !== parsedData.company ||
         existingDueDate !== parsedData.dueDate ||
         existingInstruction !== parsedData.instruction ||
@@ -173,6 +176,7 @@ function doPost(e) {
         'メッセージID': chatworkLink,
         '投稿者': fromAccount,
         '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
         '会社': parsedData.company,
         '期限日': parsedData.dueDate,
         '指示': parsedData.instruction,
@@ -196,6 +200,7 @@ function doPost(e) {
         'メッセージID': chatworkLink,
         '投稿者': fromAccount,
         '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
         '会社': parsedData.company,
         '期限日': parsedData.dueDate,
         '指示': parsedData.instruction,
@@ -280,6 +285,7 @@ function parseTemplateMessage(body) {
   
   return {
     company: extractTagValues(metadataPart, '会社'),
+    personInCharge: extractTagValues(metadataPart, '担当者'),
     dueDate: extractTagValues(metadataPart, '期限日'),
     instruction: extractTagValues(metadataPart, '指示'),
     content: extractTagValues(metadataPart, '内容'),
