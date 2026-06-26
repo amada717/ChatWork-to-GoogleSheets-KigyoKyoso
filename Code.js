@@ -87,6 +87,37 @@ function doPost(e) {
     // ChatworkリンクURL生成
     const chatworkLink = `https://www.chatwork.com/#!rid${room_id}-${message_id}`;
 
+    // ログID生成（タイムスタンプ + message_id）
+    const log_id = new Date().getTime() + '_' + message_id;
+
+    // タグが一つも含まれていない場合はログシートのみに記録し、メインシートへは保存しない
+    const hasAnyTag = [
+      parsedData.company,
+      parsedData.personInCharge,
+      parsedData.dueDate,
+      parsedData.instruction,
+      parsedData.content
+    ].some(value => value);
+
+    if (!hasAnyTag) {
+      Logger.log('No tags found - logging only');
+      appendRowByHeaders(logSheet, {
+        'ログID': log_id,
+        'メッセージID': chatworkLink,
+        '投稿者': fromAccount,
+        '宛先': toAccounts,
+        '担当者': parsedData.personInCharge,
+        '会社': parsedData.company,
+        '期限日': parsedData.dueDate,
+        '指示': parsedData.instruction,
+        '内容': parsedData.content,
+        '本文': parsedData.body,
+        '操作種別': 'no_tag',
+        '操作日時': send_time
+      });
+      return ContentService.createTextOutput('no tags - logged only');
+    }
+
     const dataObj = {
       'メッセージID': chatworkLink,
       '投稿者': fromAccount,
@@ -104,9 +135,6 @@ function doPost(e) {
 
     // メインシートでの既存メッセージのチェック
     const existingRow = findRowByColumn(sheet, 'メッセージID', chatworkLink);
-
-    // ログID生成（タイムスタンプ + message_id）
-    const log_id = new Date().getTime() + '_' + message_id;
 
     // 会社シートは #会社# が空でない場合のみ作成
     const companySheetName = getCompanySheetName(parsedData.company);
