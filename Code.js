@@ -414,10 +414,14 @@ function protectSheetOwnerOnly(sheet) {
 
   protection.setWarningOnly(false);
 
-  const editors = protection.getEditors();
-  if (editors.length > 0) {
-    protection.removeEditors(editors);
-  }
+  // オーナー（自分自身）は編集者から削除できずエラーになるため、1人ずつ削除して失敗は無視する
+  protection.getEditors().forEach(editor => {
+    try {
+      protection.removeEditor(editor);
+    } catch (error) {
+      // オーナー自身の削除エラーは想定内のため無視
+    }
+  });
 
   if (protection.canDomainEdit()) {
     protection.setDomainEdit(false);
